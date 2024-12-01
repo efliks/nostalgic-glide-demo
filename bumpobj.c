@@ -335,7 +335,7 @@ void update_object3d(object3d_t *obj)
         transform_vector(&v->point, m, &v->rotated_point);
         transform_vector(&v->normal, m, &v->rotated_normal);
 
-        compute_translated_point(&v->point, &v->translated_point);
+        compute_translated_point(&v->rotated_point, &v->translated_point);
 
         v++;
     }

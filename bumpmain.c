@@ -10,7 +10,7 @@
 #include "raster.h"
 #include "texture.h"
 
-const char* texturefiles[32] = { "assets/brick.pcx", "assets/browntil.pcx", "assets/floor.pcx" };
+const char* texturefiles[20] = { "assets/brick.pcx", "assets/browntil.pcx", "assets/floor.pcx", "assets/brick.pcx", "assets/browntil.pcx", "assets/floor.pcx" };
 
 int get_next_mode(int drawing_mode)
 {
@@ -141,9 +141,13 @@ void do_bump_mapping(unsigned char* framebuffer)
     dc.height = 200;
     dc.framebuffer = framebuffer;
 
-    is_success = create_cube(&objcube, NULL, 0);
+    is_success = create_cube(&objcube, texturefiles, 6);
     if (is_success) {
         reset_and_scale_object3d(&objcube, 50.f);
+        objcube.adx = 1;
+        objcube.ady = 1;
+        objcube.adz = 1;
+   
         main_loop(&objcube, &light, &dc);
     
         unload_object3d(&objcube);
