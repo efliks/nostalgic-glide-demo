@@ -72,7 +72,7 @@ typedef struct
     unsigned int ax, ay, az, adx, ady, adz;
 } object3d_t;
 
-void sort_faces(object3d_t *);
+void sort_faces(object3d_t *, vector3d_t *);
 
 void update_object3d(object3d_t *);
 

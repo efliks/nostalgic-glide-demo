@@ -143,10 +143,11 @@ void do_bump_mapping(unsigned char* framebuffer)
 
     is_success = create_cube(&objcube, texturefiles, 6);
     if (is_success) {
-        reset_and_scale_object3d(&objcube, 50.f);
+        reset_and_scale_object3d(&objcube, 100.f);
         objcube.adx = 1;
         objcube.ady = 1;
         objcube.adz = 1;
+        set_palette(objcube.textures[0].palette);
    
         main_loop(&objcube, &light, &dc);
     

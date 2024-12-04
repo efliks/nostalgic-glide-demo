@@ -152,14 +152,15 @@ void create_face_from_template(facedata_t* face, const facetempl_t* templ, verte
     face->v2 = &vertices[templ->v2];
     face->v3 = &vertices[templ->v3];
 
-    face->mapper.s1 = templ->mapper.s1;
-    face->mapper.t1 = templ->mapper.t1;
+    // Assume all textures are 128x128
+    face->mapper.s1 = templ->mapper.s1 << 7;
+    face->mapper.t1 = templ->mapper.t1 << 7;
 
-    face->mapper.s2 = templ->mapper.s2;
-    face->mapper.t2 = templ->mapper.t2;
+    face->mapper.s2 = templ->mapper.s2 << 7;
+    face->mapper.t2 = templ->mapper.t2 << 7;
 
-    face->mapper.s3 = templ->mapper.s3;
-    face->mapper.t3 = templ->mapper.t3;
+    face->mapper.s3 = templ->mapper.s3 << 7;
+    face->mapper.t3 = templ->mapper.t3 << 7;
 
     face->mapper.texture = &textures[templ->mapper.texture_idx];
 }
@@ -271,7 +272,7 @@ void reset_and_scale_object3d(object3d_t *obj, float scalefactor)
     reset_object3d(obj);
 }
 
-void sort_faces(object3d_t *obj)
+void sort_faces(object3d_t *obj, vector3d_t* lookvector)
 {
     int i;
     float x1, y1, x2, y2, x3, y3;
@@ -291,7 +292,8 @@ void sort_faces(object3d_t *obj)
         x3 = f->v3->translated_point.x;
         y3 = f->v3->translated_point.y;
 
-        if (((y1 - y3) * (x2 - x1) - (x1 - x3) * (y2 - y1)) > 0) {
+        if (((y1 - y3) * (x2 - x1) - (x1 - x3) * (y2 - y1)) <= 0) {
+        //if (dot_product(&f->rotated_normal, lookvector) >= 0) {
             fo->face = f;
             fo->depth = f->v1->rotated_point.x;
             fo->depth += f->v2->rotated_point.x;
@@ -309,21 +311,19 @@ void sort_faces(object3d_t *obj)
 
 int compare_faces(const void* a, const void* b)
 {
-    return ((faceorder_t *) a)->depth > ((faceorder_t *) b)->depth;
+    return ((faceorder_t *) a)->depth < ((faceorder_t *) b)->depth;
 }
 
 void update_object3d(object3d_t *obj)
 {
     int i;
     matrix_t m;
-
     facedata_t* f = obj->faces;
     vertexdata_t* v = obj->vertices;
 
     obj->ax += obj->adx;
     obj->ay += obj->ady;
     obj->az += obj->adz;
-
     compute_rotation_matrix(m, obj->ax, obj->ay, obj->az);
 
     for (i = 0; i < obj->numfaces; i++) {

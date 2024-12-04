@@ -4,6 +4,7 @@ CCOPTS = -2 -fp2 -ml -q -zt=100
 GLOBOBJS = &
  bumpmain.obj &
  bumpobj.obj &
+ bumptri.obj &
  clock.obj &
  low.obj &
  main.obj &
