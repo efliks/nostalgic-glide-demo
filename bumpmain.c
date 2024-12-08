@@ -140,6 +140,7 @@ void do_bump_mapping()
     is_success = create_cube(&objcube, texturefiles, 6);
     if (is_success) {
         reset_and_scale_object3d(&objcube, 100.f);
+        save_txt_object3d(&objcube, "objcube.txt");
         objcube.adx = 1;
         objcube.ady = 1;
         objcube.adz = 1;

@@ -82,4 +82,6 @@ void reset_and_scale_object3d(object3d_t *, float);
 int create_cube(object3d_t *, char **, int);
 void unload_object3d(object3d_t *);
 
+void save_txt_object3d(object3d_t *, char *);
+
 #endif  // _3DOBJ_H

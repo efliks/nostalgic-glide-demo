@@ -340,3 +340,45 @@ void update_object3d(object3d_t *obj)
         v++;
     }
 }
+
+int find_idx(vertexdata_t* v, object3d_t* obj)
+{
+    int i;
+    vertexdata_t* vo = obj->vertices;
+
+    for (i = 0; i < obj->numpoints; i++) {
+        if (v == vo) {
+            return i;
+        }
+        vo++;
+    }
+
+    return -1;  // should never happen
+}
+
+void save_txt_object3d(object3d_t* obj, char* filename)
+{
+    FILE* fp;
+    int i;
+
+    fp = fopen(filename, "w");
+
+    if (fp != NULL) {
+        fprintf(fp, "%d\n%d\n", obj->numpoints, obj->numfaces);
+
+        for (i = 0; i < obj->numpoints; i++) {
+            fprintf(fp, "v %f,  %f,  %f\n", obj->vertices[i].point.x, obj->vertices[i].point.y, obj->vertices[i].point.z);
+        }
+        for (i = 0; i < obj->numfaces; i++) {
+            fprintf(fp, "f %d,  %d,  %d\n", find_idx(obj->faces[i].v1, obj), find_idx(obj->faces[i].v2, obj), find_idx(obj->faces[i].v3, obj));
+        }
+        for (i = 0; i < obj->numpoints; i++) {
+            fprintf(fp, "vn %f,  %f,  %f\n", obj->vertices[i].normal.x, obj->vertices[i].normal.y, obj->vertices[i].normal.z);
+        }
+        for (i = 0; i < obj->numfaces; i++) {
+            fprintf(fp, "fn %f,  %f,  %f\n", obj->faces[i].face_normal.x, obj->faces[i].face_normal.y, obj->faces[i].face_normal.z);
+        }
+
+        fclose(fp);
+    }
+}
