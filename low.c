@@ -11,6 +11,16 @@
 #include <conio.h>
 #include <string.h> // for memset
 
+#ifdef __386__
+#define DO_INT(i, r_in, r_out) int386(i, r_in, r_out)
+#define VGA_MEMORY 0xA0000
+
+#else
+#define DO_INT(i, r_in, r_out) int86(i, r_in, r_out)
+#define VGA_MEMORY 0xA0000000L
+
+#endif
+
 static unsigned char default_palette[768];
 
 
@@ -29,7 +39,7 @@ void set_mode13h()
     union REGS regs;
 
     regs.w.ax = 0x13;
-    int86(0x10, &regs, &regs);
+    DO_INT(0x10, &regs, &regs);
 
     //dump_palette(default_palette);
 }
@@ -39,13 +49,12 @@ void unset_mode13h()
     union REGS regs;
 
     regs.w.ax = 0x3;
-    int86(0x10, &regs, &regs);
+    DO_INT(0x10, &regs, &regs);
 }
 
 void copy_buffer(unsigned char* buffer)
 {
-    unsigned char far* ptr_vidmem = (unsigned char far *)0xA0000000L;
-    memcpy(ptr_vidmem, buffer, 64000);
+    memcpy((unsigned char *)VGA_MEMORY, buffer, 64000);
 }
 
 void clear_buffer(unsigned char* buffer)

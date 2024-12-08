@@ -9,12 +9,17 @@
 #include <dos.h>
 #include <conio.h>
 
+#include "clock.h"
+
+#define TIMES_FASTER 15
+#define WAIT_TICKS 8
+
 #define CLOCK_FREQUENCY 1193181
 #define DOS_DIVISOR 65535
 #define DOS_FREQUENCY CLOCK_FREQUENCY / DOS_DIVISOR   // 18.206775005722132 ticks/s
 
-#define MY_DIVISOR 8192 
-#define MY_FREQUENCY CLOCK_FREQUENCY / DOS_DIVISOR   // 145.6519775390625 ticks/s
+#define MY_DIVISOR DOS_DIVISOR / TIMES_FASTER
+#define MY_FREQUENCY CLOCK_FREQUENCY / DOS_DIVISOR   // 273.101625085832 ticks/s
 
 #define TIMER_FACTOR MY_FREQUENCY / DOS_FREQUENCY  // call DOS interrupt every 8 ticks
 
@@ -23,12 +28,12 @@ void interrupt (*old_clock_interrupt)(void);
 unsigned long timer = 0, timer_dos = 0, timer_stop;
 
 
-void timer_start(unsigned long ticks)
+void timer_wait()
 {
-    timer_stop = timer + ticks;
+    timer_custom_wait(WAIT_TICKS);
 }
 
-void timer_wait()
+void timer_custom_wait(unsigned long ticks)
 {
     while (timer < timer_stop) {
         // Reduce CPU load in VirtualBox from 100% to 65%
@@ -36,13 +41,14 @@ void timer_wait()
             hlt
         }
     }
+    timer_stop = timer + ticks;
 }
 
 void interrupt clock_interrupt(void)
 {
     timer++;
 
-    if ((++timer_dos) > TIMER_FACTOR) {
+    if ((++timer_dos) == TIMES_FASTER) {
         timer_dos = 0;
         old_clock_interrupt();
     }

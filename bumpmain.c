@@ -23,8 +23,6 @@ void main_loop(object3d_t* obj, vector3d_t* light_source, drawcontext_t* drawcon
     int drawing_mode = 0;
 
     while (drawing_mode != -1) {
-        timer_start(5);
-
         update_object3d(obj);
         draw_object3d(obj, light_source, drawcontext);
 
