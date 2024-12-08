@@ -1,7 +1,33 @@
 
+#include <stdlib.h>
+
 #include "raster.h"
 #include "low.h"
 #include "bumptri.h"
+
+int create_context(drawcontext_t* dc, unsigned char* palette)
+{
+    if ((dc->framebuffer = (unsigned char *)malloc(64000)) == NULL) {
+        return 0;
+    }
+    dc->width = 320;
+    dc->height = 200;
+    clear_buffer(dc->framebuffer);
+
+    set_mode13h();
+    set_palette(palette);
+
+    return 1;
+}
+
+void destroy_context(drawcontext_t* dc)
+{
+    unset_mode13h();
+
+    if (dc->framebuffer) {
+        free(dc->framebuffer);
+    }
+}
 
 void flip_buffer(drawcontext_t *dc)
 {

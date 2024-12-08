@@ -129,7 +129,7 @@ void compute_palette_levels(unsigned char* inpal, unsigned char* outpal,
     write_palette(outpal, "genpal.txt");
 }
 
-void do_bump_mapping(unsigned char* framebuffer)
+void do_bump_mapping()
 {
     int is_success = 0;
 
@@ -137,19 +137,19 @@ void do_bump_mapping(unsigned char* framebuffer)
     object3d_t objcube;
     vector3d_t light = { -1, 0, 0 };
 
-    dc.width = 320;
-    dc.height = 200;
-    dc.framebuffer = framebuffer;
-
     is_success = create_cube(&objcube, texturefiles, 6);
     if (is_success) {
         reset_and_scale_object3d(&objcube, 100.f);
         objcube.adx = 1;
         objcube.ady = 1;
         objcube.adz = 1;
-        set_palette(objcube.textures[0].palette);
-   
-        main_loop(&objcube, &light, &dc);
+
+        is_success = create_context(&dc, objcube.textures[0].palette);
+        if (is_success) {
+            main_loop(&objcube, &light, &dc);
+
+            destroy_context(&dc);
+        }
     
         unload_object3d(&objcube);
     }
