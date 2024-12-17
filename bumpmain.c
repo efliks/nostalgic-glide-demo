@@ -9,6 +9,7 @@
 #include "bumpobj.h"
 #include "raster.h"
 #include "texture.h"
+#include "texman.h"
 
 const char* texturefiles[20] = { "assets/work/col32/metlplt.pcx", "assets/work/col32/trak_g.pcx" , "assets/work/col32/02camino.pcx", "assets/work/col32/floor_d.pcx", "assets/work/col32/floor_f.pcx", "assets/work/col32/floor_g.pcx" };
 
@@ -167,39 +168,46 @@ void do_bump_mapping()
     drawcontext_t dc;
     object3d_t objcube;
     vector3d_t light = { -1, 0, 0 };
+    texturemanager_t tm;
 
     unsigned char palette[768];
 
-    is_success = create_cube(&objcube, texturefiles, 6);
+    is_success = create_manager(&tm);
+
     if (is_success) {
-        reset_and_scale_object3d(&objcube, 100.f);
-        save_txt_object3d(&objcube, "objcube.txt");
-        objcube.adx = 1;
-        objcube.ady = 1;
-        objcube.adz = 2;
-            
-        printf("All good. Press any key to start...\n");
-        get_key_code();
+        is_success = create_cube(&objcube, texturefiles, 6, &tm);
 
-        is_success = create_context(&dc, objcube.textures[0].palette);
-        /*
-        create_phong_palette(palette);
-        memcpy(palette, asmshade_palette, 768);
-        compute_palette_levels(objcube.textures[0].palette, palette, 32);
-        is_success = create_context(&dc, palette);
-        */
         if (is_success) {
-            /*
-            display_palette(objcube.textures[0].data, dc.framebuffer);
-            flip_buffer(&dc);
+            reset_and_scale_object3d(&objcube, 100.f);
+            save_txt_object3d(&objcube, "objcube.txt");
+            objcube.adx = 1;
+            objcube.ady = 1;
+            objcube.adz = 2;
+                
+            printf("All good. Press any key to start...\n");
             get_key_code();
+        
+            is_success = create_context(&dc, objcube.faces[0].mapper.texture->palette);
+            /*
+            create_phong_palette(palette);
+            memcpy(palette, asmshade_palette, 768);
+            compute_palette_levels(objcube.textures[0].palette, palette, 32);
+            is_success = create_context(&dc, palette);
             */
-            main_loop(&objcube, &light, &dc);
-
-            destroy_context(&dc);
+            if (is_success) {
+                /*
+                display_palette(objcube.textures[0].data, dc.framebuffer);
+                flip_buffer(&dc);
+                get_key_code();
+                */
+                main_loop(&objcube, &light, &dc);
+        
+                destroy_context(&dc);
+            }
+        
+            unload_object3d(&objcube);
         }
-    
-        unload_object3d(&objcube);
+        destroy_manager(&tm);
     }
 
     if (!is_success) {

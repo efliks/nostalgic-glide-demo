@@ -11,6 +11,7 @@ GLOBOBJS = &
  math3d.obj &
  raster.obj &
  template.obj &
+ texman.obj &
  texture.obj
 
 all: cubedemo.exe
