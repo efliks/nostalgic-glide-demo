@@ -10,7 +10,7 @@
 #include "raster.h"
 #include "texture.h"
 
-const char* texturefiles[20] = { "assets/brick.pcx", "assets/browntil.pcx", "assets/floor.pcx", "assets/brick.pcx", "assets/browntil.pcx", "assets/floor.pcx" };
+const char* texturefiles[20] = { "assets/work/col32/metlplt.pcx", "assets/work/col32/trak_g.pcx" , "assets/work/col32/02camino.pcx", "assets/work/col32/floor_d.pcx", "assets/work/col32/floor_f.pcx", "assets/work/col32/floor_g.pcx" };
 
 int get_next_mode(int drawing_mode)
 {
@@ -117,14 +117,47 @@ void compute_palette_levels(unsigned char* inpal, unsigned char* outpal,
             outp = outpal + 3 * (i + j * num_colors);
 
             for (k = 0; k < 3; k++) {
-                *outp = compute_component(*inp, num_levels, j);
-                outp++;
-                inp++;
+                *(outp++) = compute_component(*(inp++), num_levels, j);
             }
         }
     }
 
     write_palette(outpal, "genpal.txt");
+}
+
+// debug!!!
+void put_single_texture(unsigned char* data, unsigned char* buffer, 
+        int x, int y, int color_level)
+{
+    int i, j;
+    unsigned char* t = data;
+    unsigned char* b = buffer + x + y * 320;
+
+    for (i = 0; i < 64; i++) {
+        for (j = 0; j < 64; j++) {
+            // draw every second pixel
+            *(b++) = (*(t += 2)) + (color_level << 5);
+        }
+        b += 320 - 128 / 2;
+        // skip one line
+        t += 128;
+    }
+}
+
+void display_palette(unsigned char* texturedata, unsigned char* buffer)
+{
+    int i, j, k;
+
+    i = j = 0;
+
+    for (k = 0; k < 8; k++) {
+        put_single_texture(texturedata, buffer, i * 64, j * 64, k);
+        i++;
+        if (i > 4) {
+            i = 0;
+            j++;
+        }
+    }
 }
 
 void do_bump_mapping()
@@ -135,16 +168,32 @@ void do_bump_mapping()
     object3d_t objcube;
     vector3d_t light = { -1, 0, 0 };
 
+    unsigned char palette[768];
+
     is_success = create_cube(&objcube, texturefiles, 6);
     if (is_success) {
         reset_and_scale_object3d(&objcube, 100.f);
         save_txt_object3d(&objcube, "objcube.txt");
         objcube.adx = 1;
         objcube.ady = 1;
-        objcube.adz = 1;
+        objcube.adz = 2;
+            
+        printf("All good. Press any key to start...\n");
+        get_key_code();
 
         is_success = create_context(&dc, objcube.textures[0].palette);
+        /*
+        create_phong_palette(palette);
+        memcpy(palette, asmshade_palette, 768);
+        compute_palette_levels(objcube.textures[0].palette, palette, 32);
+        is_success = create_context(&dc, palette);
+        */
         if (is_success) {
+            /*
+            display_palette(objcube.textures[0].data, dc.framebuffer);
+            flip_buffer(&dc);
+            get_key_code();
+            */
             main_loop(&objcube, &light, &dc);
 
             destroy_context(&dc);

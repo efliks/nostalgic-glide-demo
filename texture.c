@@ -100,6 +100,7 @@ int load_texture(texture_t* texture, char* filename)
                         read_palette(fp, texture->palette);
 
                         is_success = 1;
+                        printf("Loaded: %s\n", filename);
                     }
                 }
             }
