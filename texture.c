@@ -35,10 +35,10 @@ typedef struct
 
 void unload_bitmap(bitmap_t* bitmap)
 {
-    if (bitmap->palette) {
-        free(bitmap->palette);
-        if (bitmap->data) {
-            free(bitmap->data);
+    if (bitmap->data) {
+        free(bitmap->data);
+        if (bitmap->palette) {
+            free(bitmap->palette);
         }
     }
 }
