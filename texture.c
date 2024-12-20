@@ -33,12 +33,12 @@ typedef struct
     uchar filler[54];
 } pcxhead_t;
 
-void unload_texture(texture_t* texture)
+void unload_bitmap(bitmap_t* bitmap)
 {
-    if (texture->palette) {
-        free(texture->palette);
-        if (texture->data) {
-            free(texture->data);
+    if (bitmap->palette) {
+        free(bitmap->palette);
+        if (bitmap->data) {
+            free(bitmap->data);
         }
     }
 }
@@ -75,7 +75,7 @@ void read_palette(FILE* fp, unsigned char* palette)
     }
 }
 
-int load_texture(texture_t* texture, char* filename)
+int load_bitmap(bitmap_t* bitmap, char* filename)
 {
     pcxhead_t header;
     FILE* fp;
@@ -86,21 +86,20 @@ int load_texture(texture_t* texture, char* filename)
         fread(&header, sizeof(pcxhead_t), 1, fp);
 
         if (header.magic == 0x0a && header.bitsperpixel == 8) {
-            texture->width = header.xmax - header.xmin + 1;
-            texture->height = header.ymax - header.ymin + 1;
+            bitmap->width = header.xmax - header.xmin + 1;
+            bitmap->height = header.ymax - header.ymin + 1;
 
-            if (texture->width * texture->height < 0xffff) {
-                texture->data = (unsigned char *)malloc(texture->width * texture->height * sizeof(unsigned char));
+            if (bitmap->width * bitmap->height < 0xffff) {
+                bitmap->data = (unsigned char *)malloc(bitmap->width * bitmap->height * sizeof(unsigned char));
         
-                if (texture->data) {
-                    texture->palette = (unsigned char *)malloc(768 * sizeof(unsigned char));
+                if (bitmap->data) {
+                    bitmap->palette = (unsigned char *)malloc(768 * sizeof(unsigned char));
         
-                    if (texture->palette) {
-                        read_compressed_data(fp, texture->width * texture->height, texture->data);
-                        read_palette(fp, texture->palette);
+                    if (bitmap->palette) {
+                        read_compressed_data(fp, bitmap->width * bitmap->height, bitmap->data);
+                        read_palette(fp, bitmap->palette);
 
                         is_success = 1;
-                        printf("Loaded: %s\n", filename);
                     }
                 }
             }
@@ -110,8 +109,26 @@ int load_texture(texture_t* texture, char* filename)
     }
 
     if (!is_success) {
-        unload_texture(texture);
+        unload_bitmap(bitmap);
     }
 
     return is_success;
+}
+
+int load_texture(texture_t* texture, char* filename) 
+{
+    int is_success;
+
+    is_success = load_bitmap(&texture->bitmap, filename);
+    if (is_success) {
+        texture->texturetype = TEXTURE_SOFT;
+        printf("Loaded texture: %s\n", filename);
+    }
+
+    return is_success;
+}
+
+void unload_texture(texture_t* texture)
+{
+    unload_bitmap(&texture->bitmap);
 }

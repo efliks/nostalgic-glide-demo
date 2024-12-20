@@ -88,7 +88,7 @@ void draw_object3d(object3d_t* obj, vector3d_t* lightvector, drawcontext_t* dc)
         gouraud_triangle(x1, y1, x2, y2, x3, y3, cola, colb, colc, dc->framebuffer);
         */
         //flat_triangle(x1, y1, x2, y2, x3, y3, (unsigned char)(i + 1), dc->framebuffer);
-        textured_triangle(x1, y1, x2, y2, x3, y3, f->mapper.s1, f->mapper.t1, f->mapper.s2, f->mapper.t2, f->mapper.s3, f->mapper.t3, f->mapper.texture->data, dc->framebuffer);
+        textured_triangle(x1, y1, x2, y2, x3, y3, f->mapper.s1, f->mapper.t1, f->mapper.s2, f->mapper.t2, f->mapper.s3, f->mapper.t3, f->mapper.texture->bitmap.data, dc->framebuffer);
 
         //textured_gouraud_triangle(x1, y1, x2, y2, x3, y3, f->mapper.s1, f->mapper.t1, f->mapper.s2, f->mapper.t2, f->mapper.s3, f->mapper.t3, f->mapper.texture->data, cola, colb, colc, dc->framebuffer);
 
