@@ -1,0 +1,28 @@
+
+#CCOPTS = -s -otexan -D__DOS32__ -w4 -e25 -fp5 -zq -5s -ei -mf -bt#dos -IC:\broccoli\glide\include
+CCOPTS =
+
+GLOBOBJS = &
+ bumpmain.obj &
+ bumpobj.obj &
+ clock.obj &
+ low.obj &
+ main.obj &
+ math3d.obj &
+ rsglide.obj &
+ template.obj &
+ texman.obj &
+ texglide.obj
+
+all: cubegl.exe
+
+cubegl.exe: $(GLOBOBJS)
+	wlink @cubegl.lnk
+
+.c.obj:
+	wcc386 $(CCOPTS) -fo=$[*.obj $[*.c
+
+clean: .SYMBOLIC
+	del *.obj
+	del *.err
+	del cubegl.exe

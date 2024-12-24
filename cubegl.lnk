@@ -1,0 +1,36 @@
+
+# cubegl.exe linker directive file
+
+option stack=64k
+option nocaseexact
+option verbose
+option map
+
+lib ./glide/lib/glide2x.lib
+#lib noemu87.lib
+#lib fxdpmi.lib
+#lib fxmisc.lib
+#lib fxpci.lib
+#lib clib3s
+
+sys dos4g
+# system begin dos4g
+#     option osname='DOS/4G'
+#     libpath '%WATCOM%/lib386'
+#     libpath '%WATCOM%/lib386/dos'
+#     op stub=wstub.exe
+#     format os2 le
+# end
+
+name cubegl
+
+file bumpmain.obj
+file bumpobj.obj
+file clock.obj
+file low.obj
+file main.obj
+file math3d.obj
+file rsglide.obj
+file template.obj
+file texman.obj
+file texglide.obj

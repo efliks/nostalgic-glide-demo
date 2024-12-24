@@ -11,7 +11,9 @@
 #include "texture.h"
 #include "texman.h"
 
-const char* texturefiles[20] = { "assets/work/col32/metlplt.pcx", "assets/work/col32/trak_g.pcx" , "assets/work/col32/02camino.pcx", "assets/work/col32/floor_d.pcx", "assets/work/col32/floor_f.pcx", "assets/work/col32/floor_g.pcx" };
+//const char* texturefiles[20] = { "assets/work/col32/metlplt.pcx", "assets/work/col32/trak_g.pcx" , "assets/work/col32/02camino.pcx", "assets/work/col32/floor_d.pcx", "assets/work/col32/floor_f.pcx", "assets/work/col32/floor_g.pcx" };
+
+const char* texturefiles[20] = { "assets/glide/metlplt.3df", "assets/glide/trak_g.3df" , "assets/glide/02camino.3df", "assets/glide/floor_d.3df", "assets/glide/floor_f.3df", "assets/glide/floor_g.3df" };
 
 int get_next_mode(int drawing_mode)
 {

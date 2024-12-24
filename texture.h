@@ -11,8 +11,9 @@ typedef struct
 
 typedef struct
 {
-    int is_in_tmu;
     void* data;
+    int is_in_tmu;
+    unsigned long tmu_memory_addr;
 } glidetexture_t;
 
 typedef struct
@@ -21,6 +22,7 @@ typedef struct
         bitmap_t bitmap;
         glidetexture_t glidetexture;
     };
+
     texturetype_t texturetype;
 } texture_t;
 
