@@ -1,0 +1,20 @@
+
+# cube386.exe linker directive file
+
+option stack=64k
+option verbose
+option map
+sys dos4g
+name cube386
+
+file bumpmain.obj
+file bumpobj.obj
+file bumptri.obj
+file clock.obj
+file low.obj
+file main.obj
+file math3d.obj
+file raster.obj
+file template.obj
+file texman.obj
+file texture.obj
