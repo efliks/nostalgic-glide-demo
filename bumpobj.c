@@ -312,6 +312,65 @@ void update_object3d(object3d_t *obj)
     }
 }
 
+void load_object_data(object3d_t* obj, FILE* p)
+{
+    int i;
+    unsigned short tmpvertices[3];
+
+    vertexdata_t* v = obj->vertices;
+    facedata_t* f = obj->faces;
+
+    // read vertices
+    for (i = 0; i < obj->numpoints; i++) {
+        fread(&v->point, sizeof(point3d_t), 1, p);
+        v++;
+    }
+    
+    // read faces
+    for (i = 0; i < obj->numfaces; i++) {
+        fread(tmpvertices, sizeof(tmpvertices), 1, p);
+        f->v1 = &obj->vertices[tmpvertices[0]];
+        f->v2 = &obj->vertices[tmpvertices[1]];
+        f->v3 = &obj->vertices[tmpvertices[2]];
+    
+        // No texture available
+        f->mapper.texture = NULL;
+    
+        f++;
+    }
+}
+
+int load_object3d(object3d_t* obj, char* filename)
+{
+    FILE* p;
+    char header[5];
+    int is_success = 0;
+
+    p = fopen(filename, "r+b");
+    if (p) {
+        fread(header, 1, 4, p);
+        header[4] = 0;
+
+        if (strcmp(header, "MF3D") == 0) {
+            memset(obj, 0, sizeof(object3d_t));
+            fread(&obj->numpoints, 2, 1, p);
+            fread(&obj->numfaces, 2, 1, p);
+
+            is_success = allocate_object3d(obj);
+            if (is_success) {
+                load_object_data(obj, p);
+
+                compute_face_normals(obj);
+                compute_vertex_normals(obj);
+            }
+        }
+
+        fclose(p);
+    }
+
+    return is_success;
+}
+
 int find_idx(vertexdata_t* v, object3d_t* obj)
 {
     int i;
