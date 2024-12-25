@@ -1,6 +1,6 @@
 
 #CCOPTS = -s -otexan -D__DOS32__ -w4 -e25 -fp5 -zq -5s -ei -mf -bt#dos -IC:\broccoli\glide\include
-CCOPTS =
+CCOPTS = -I.\dummy
 
 GLOBOBJS = &
  bumpmain.obj &

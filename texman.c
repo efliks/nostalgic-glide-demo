@@ -76,8 +76,7 @@ int create_manager(texturemanager_t* tm)
     tm->numtextures = 0;
 
     // preallocate some textures for a start
-    //FIXME!!!
-    tm->_numallocated = 10;
+    tm->_numallocated = 3;
     tm->textures = (cachedtexture_t *)malloc(sizeof(cachedtexture_t) * tm->_numallocated);
     if (tm->textures != NULL) {
         return 1;

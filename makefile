@@ -1,5 +1,5 @@
 
-CCOPTS = -2 -fp2 -ml -q -zt=100
+CCOPTS = -2 -fp2 -ml -q -zt=100 -I.\dummy
 
 GLOBOBJS = &
  bumpmain.obj &

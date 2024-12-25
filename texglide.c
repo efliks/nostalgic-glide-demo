@@ -5,12 +5,11 @@
 #include <glide.h>
 
 #include "texture.h"
-#include "copytlib.h"
 
 // Copy from 3dfx tlib
 static GrTexTable_t texTableType( GrTextureFormat_t format ) 
 {
-    GrTexTable_t rv = (GrTexTable_t)NO_TABLE;
+    GrTexTable_t rv = (GrTexTable_t)-1;
     switch( format ) {
     case GR_TEXFMT_YIQ_422:
     case GR_TEXFMT_AYIQ_8422:
@@ -48,15 +47,8 @@ int load_3dffile(Gu3dfInfo* gu, char* filename)
 
 void unload_glide_texture(glidetexture_t* gt)
 {
-    TlTexture* tl;
-
-    if (gt->data) {
-        tl = (TlTexture *)gt->data;
-        if (tl->info.data) {
-            free(tl->info.data);
-        }
-
-        free(gt->data);
+    if (gt->info.data != NULL) {
+        free(gt->info.data);
     }
 }
 
@@ -65,42 +57,32 @@ int load_glide_texture(glidetexture_t* gt, char* filename)
     int is_good = 0;
 
     Gu3dfInfo gu;
-    TlTexture* tl;
 
     if (load_3dffile(&gu, filename)) {
-
         gt->is_in_tmu = 0;
         gt->tmu_memory_addr = -1;
-        gt->data = malloc(sizeof(TlTexture));
-        if (gt->data != NULL) {
-            tl = (TlTexture *)gt->data;
 
-            tl->info.smallLod = gu.header.small_lod;
-            tl->info.largeLod = gu.header.large_lod;
-            tl->info.aspectRatio = gu.header.aspect_ratio;
-            tl->info.format = gu.header.format;
-            
-            // Think to free this memory !
-            tl->info.data = gu.data;
+        gt->info.smallLod = gu.header.small_lod;
+        gt->info.largeLod = gu.header.large_lod;
+        gt->info.aspectRatio = gu.header.aspect_ratio;
+        gt->info.format = gu.header.format;
+        
+        // Think to free this memory !
+        gt->info.data = gu.data;
 
-            tl->tableType = texTableType(tl->info.format);
+        gt->tabletype = texTableType(gt->info.format);
 
-            switch (tl->tableType) {
-            case GR_TEXTABLE_NCC0:
-            case GR_TEXTABLE_NCC1:
-            case GR_TEXTABLE_PALETTE:
-                memcpy(&tl->tableData, &(gu.table), sizeof(TlTextureTable));
-                break;
-            default:
-                break;
-            }
-
-            is_good = 1;
+        switch (gt->tabletype) {
+        case GR_TEXTABLE_NCC0:
+        case GR_TEXTABLE_NCC1:
+        case GR_TEXTABLE_PALETTE:
+            memcpy(&gt->table, &(gu.table), sizeof(GuTexTable));
+            break;
+        default:
+            break;
         }
-    }
 
-    if (!is_good) {
-        unload_glide_texture(gt);
+        is_good = 1;
     }
 
     return is_good;

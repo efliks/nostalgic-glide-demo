@@ -4,7 +4,6 @@
 #include <glide.h>
 
 #include "raster.h"
-#include "copytlib.h"
 
 static float glidepalette[768];
 
@@ -119,7 +118,6 @@ void download_to_tmu(glidetexture_t* gt)
     static int download_count;
     static FxU32 last_memory_addr, max_memory_addr;
     FxU32 req_memory;
-    TlTexture* tl = (TlTexture *)gt->data;
 
     // Download texture to TMU onboard memory
     if (!download_count) {
@@ -127,13 +125,13 @@ void download_to_tmu(glidetexture_t* gt)
         max_memory_addr = grTexMaxAddress(GR_TMU0);
     }
 
-    req_memory = grTexTextureMemRequired(GR_MIPMAPLEVELMASK_BOTH, &tl->info);
+    req_memory = grTexTextureMemRequired(GR_MIPMAPLEVELMASK_BOTH, &gt->info);
 
     //TODO Handle out of memory error
     if ((last_memory_addr + req_memory) <= max_memory_addr) {
-        grTexDownloadMipMap(GR_TMU0, last_memory_addr, GR_MIPMAPLEVELMASK_BOTH, &tl->info);
-        if (tl->tableType != NO_TABLE) {
-            grTexDownloadTable(GR_TMU0, tl->tableType, &tl->tableData);
+        grTexDownloadMipMap(GR_TMU0, last_memory_addr, GR_MIPMAPLEVELMASK_BOTH, &gt->info);
+        if (gt->tabletype != -1) {
+            grTexDownloadTable(GR_TMU0, gt->tabletype, &gt->table);
         }
         
         gt->is_in_tmu = 1;
@@ -147,7 +145,6 @@ void download_to_tmu(glidetexture_t* gt)
 void select_texture(glidetexture_t* gt)
 {
     static FxU32 last_used_addr;
-    TlTexture* tl = (TlTexture *)gt->data;
 
     if (last_used_addr != (FxU32)(gt->tmu_memory_addr)) {
         if (!gt->is_in_tmu) {
@@ -157,7 +154,7 @@ void select_texture(glidetexture_t* gt)
         // Check in case download failed 
         if (gt->is_in_tmu) {
             last_used_addr = (FxU32)(gt->tmu_memory_addr);
-            grTexSource(GR_TMU0, last_used_addr, GR_MIPMAPLEVELMASK_BOTH, &tl->info);
+            grTexSource(GR_TMU0, last_used_addr, GR_MIPMAPLEVELMASK_BOTH, &gt->info);
         }
     }
 }
