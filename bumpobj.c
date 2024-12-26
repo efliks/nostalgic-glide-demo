@@ -312,6 +312,22 @@ void update_object3d(object3d_t *obj)
     }
 }
 
+int set_envmap(object3d_t* obj, char* envmap_file, texturemanager_t* tm)
+{
+    int i, is_good = 0; 
+
+    facedata_t* f = obj->faces;
+    texture_t* envmap = get_texture(envmap_file, tm);
+    if (envmap != NULL) {
+        is_good = 1;
+        for (i = 0; i < obj->numfaces; i++, f++) {
+            f->mapper.texture = envmap;
+        }
+    }
+
+    return is_good;
+}
+
 void load_object_data(object3d_t* obj, FILE* p)
 {
     int i;

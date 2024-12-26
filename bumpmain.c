@@ -178,6 +178,9 @@ void do_bump_mapping()
 
     if (is_success) {
         is_success = create_cube(&objcube, texturefiles, 6, &tm);
+        //is_success = load_object3d(&objcube, "assets/models/torus.3d");
+        //TODO handle error !
+        //is_success = set_envmap(&objcube, "assets/envmaps/envmap.pcx", &tm);
 
         if (is_success) {
             reset_and_scale_object3d(&objcube, 100.f);
@@ -190,6 +193,7 @@ void do_bump_mapping()
             get_key_code();
         
             is_success = create_context(&dc, objcube.faces[0].mapper.texture->bitmap.palette);
+            //is_success = create_context(&dc, asmshade_palette);
             /*
             create_phong_palette(palette);
             memcpy(palette, asmshade_palette, 768);
