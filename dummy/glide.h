@@ -4,6 +4,7 @@
 // A dummy file to allow compilation on platforms without Glide library
 
 typedef int GrTexTable_t;
+typedef unsigned long FxU32;
 
 typedef struct
 {

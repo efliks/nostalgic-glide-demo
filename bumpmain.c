@@ -192,8 +192,8 @@ void do_bump_mapping()
             printf("All good. Press any key to start...\n");
             get_key_code();
         
-            is_success = create_context(&dc, objcube.faces[0].mapper.texture->bitmap.palette);
-            //is_success = create_context(&dc, asmshade_palette);
+            is_success = create_context(&dc);
+            set_context_palette(&dc, objcube.faces[0].mapper.texture->bitmap.palette);
             /*
             create_phong_palette(palette);
             memcpy(palette, asmshade_palette, 768);

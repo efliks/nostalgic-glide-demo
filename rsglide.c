@@ -35,7 +35,7 @@ static float compute_intensity(vector3d_t* normal, vector3d_t* light)
 
 // Public functions
 
-int create_context(drawcontext_t* dc, unsigned char* palette)
+int create_context(drawcontext_t* dc)
 {
     FxBool is_success;
     GrHwConfiguration hwconfig;
@@ -54,6 +54,15 @@ int create_context(drawcontext_t* dc, unsigned char* palette)
             GR_ORIGIN_UPPER_LEFT, 
             2, 1);
         if (is_success == FXTRUE) {
+            dc->width = 640;
+            dc->height = 480;
+            dc->contexttype = CONTEXT_GLIDE;
+            grBufferClear(0x00, 0, GR_WDEPTHVALUE_FARTHEST);
+
+            dc->glide.last_memory_addr = grTexMinAddress(GR_TMU0);
+            dc->glide.max_memory_addr = grTexMaxAddress(GR_TMU0);
+            dc->glide.last_used_addr = 0;
+
             //decal texture
             grTexCombine( GR_TMU0,
                           GR_COMBINE_FUNCTION_LOCAL,
@@ -61,35 +70,8 @@ int create_context(drawcontext_t* dc, unsigned char* palette)
                           GR_COMBINE_FUNCTION_NONE,
                           GR_COMBINE_FACTOR_NONE,
                           FXFALSE, FXFALSE );
-
-            //flat lit
-            /*
-            grColorCombine( GR_COMBINE_FUNCTION_SCALE_OTHER,
-                            GR_COMBINE_FACTOR_LOCAL,
-                            GR_COMBINE_LOCAL_CONSTANT,
-                            GR_COMBINE_OTHER_TEXTURE,
-                            FXFALSE );
-            */
-
-            //rgb lit
-            grColorCombine( GR_COMBINE_FUNCTION_SCALE_OTHER,
-                            GR_COMBINE_FACTOR_LOCAL,
-                            GR_COMBINE_LOCAL_ITERATED,
-                            GR_COMBINE_OTHER_TEXTURE,
-                            FXFALSE );
-            /*
-            grAlphaCombine( GR_COMBINE_FUNCTION_LOCAL,
-                            GR_COMBINE_FACTOR_NONE,
-                            GR_COMBINE_LOCAL_ITERATED,
-                            GR_COMBINE_OTHER_TEXTURE,
-                            FXFALSE );
-            */
-
-            dc->width = 640;
-            dc->height = 480;
-            grBufferClear(0x00, 0, GR_WDEPTHVALUE_FARTHEST);
-            
-            convert_palette(palette, glidepalette, 63);
+        
+            set_draw_mode(dc, MODE_TEXTURE);    
         }
     }
 
@@ -98,6 +80,34 @@ int create_context(drawcontext_t* dc, unsigned char* palette)
     }
 
     return (is_success == FXTRUE) ? 1 : 0;
+}
+
+void set_context_palette(drawcontext_t *dc, unsigned char* palette)
+{
+    // Do nothing
+}
+
+void set_draw_mode(drawcontext_t* dc, drawmode_t mode)
+{
+    dc->drawmode = mode;
+
+    switch (dc->drawmode) {
+    case MODE_GOURAUD:
+    case MODE_ENVMAP:
+        // flat lit
+        grColorCombine(GR_COMBINE_FUNCTION_SCALE_OTHER, 
+            GR_COMBINE_FACTOR_LOCAL, 
+            GR_COMBINE_LOCAL_CONSTANT, 
+            GR_COMBINE_OTHER_TEXTURE, FXFALSE);
+        break;
+    case MODE_TEXTURE:
+        // rgb lit
+        grColorCombine(GR_COMBINE_FUNCTION_SCALE_OTHER, 
+            GR_COMBINE_FACTOR_LOCAL, 
+            GR_COMBINE_LOCAL_ITERATED, 
+            GR_COMBINE_OTHER_TEXTURE, FXFALSE);
+        break;
+    }
 }
 
 void destroy_context(drawcontext_t* dc)
@@ -113,48 +123,38 @@ void flip_buffer(drawcontext_t *dc)
     grBufferClear(0x00, 0, GR_WDEPTHVALUE_FARTHEST);
 }
 
-void download_to_tmu(glidetexture_t* gt)
+void download_to_tmu(glidetexture_t* gt, drawcontext_t* dc)
 {
-    static int download_count;
-    static FxU32 last_memory_addr, max_memory_addr;
     FxU32 req_memory;
 
     // Download texture to TMU onboard memory
-    if (!download_count) {
-        last_memory_addr = grTexMinAddress(GR_TMU0);
-        max_memory_addr = grTexMaxAddress(GR_TMU0);
-    }
-
     req_memory = grTexTextureMemRequired(GR_MIPMAPLEVELMASK_BOTH, &gt->info);
 
     //TODO Handle out of memory error
-    if ((last_memory_addr + req_memory) <= max_memory_addr) {
-        grTexDownloadMipMap(GR_TMU0, last_memory_addr, GR_MIPMAPLEVELMASK_BOTH, &gt->info);
+    if ((dc->glide.last_memory_addr + req_memory) <= dc->glide.max_memory_addr) {
+        grTexDownloadMipMap(GR_TMU0, dc->glide.last_memory_addr, GR_MIPMAPLEVELMASK_BOTH, &gt->info);
         if (gt->tabletype != -1) {
             grTexDownloadTable(GR_TMU0, gt->tabletype, &gt->table);
         }
         
         gt->is_in_tmu = 1;
-        gt->tmu_memory_addr = (unsigned long)last_memory_addr;
-        last_memory_addr += req_memory;
-        
-        download_count++;
+        gt->tmu_memory_addr = (unsigned long)dc->glide.last_memory_addr;
+
+        dc->glide.last_memory_addr += req_memory;
     }
 }
 
-void select_texture(glidetexture_t* gt)
+void select_texture(glidetexture_t* gt, drawcontext_t* dc)
 {
-    static FxU32 last_used_addr;
-
-    if (last_used_addr != (FxU32)(gt->tmu_memory_addr)) {
+    if (dc->glide.last_used_addr != (FxU32)(gt->tmu_memory_addr)) {
         if (!gt->is_in_tmu) {
-            download_to_tmu(gt);
+            download_to_tmu(gt, dc);
         }
     
         // Check in case download failed 
         if (gt->is_in_tmu) {
-            last_used_addr = (FxU32)(gt->tmu_memory_addr);
-            grTexSource(GR_TMU0, last_used_addr, GR_MIPMAPLEVELMASK_BOTH, &gt->info);
+            dc->glide.last_used_addr = (FxU32)(gt->tmu_memory_addr);
+            grTexSource(GR_TMU0, dc->glide.last_used_addr, GR_MIPMAPLEVELMASK_BOTH, &gt->info);
         }
     }
 }
@@ -195,7 +195,7 @@ void draw_object3d(object3d_t* obj, vector3d_t* light, drawcontext_t* dc)
         v3.y = f->v3->translated_point.y * scaley + corry;
 
         gt = &f->mapper.texture->glidetexture;
-        select_texture(gt);
+        select_texture(gt, dc);
 
         //FIXME
         v1.oow = 1;
