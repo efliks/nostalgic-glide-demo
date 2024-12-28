@@ -11,21 +11,13 @@
 #include "texture.h"
 #include "texman.h"
 
-//const char* texturefiles[20] = { "assets/work/col32/metlplt.pcx", "assets/work/col32/trak_g.pcx" , "assets/work/col32/02camino.pcx", "assets/work/col32/floor_d.pcx", "assets/work/col32/floor_f.pcx", "assets/work/col32/floor_g.pcx" };
-
-const char* texturefiles[20] = { "assets/glide/metlplt.3df", "assets/glide/trak_g.3df" , "assets/glide/02camino.3df", "assets/glide/floor_d.3df", "assets/glide/floor_f.3df", "assets/glide/floor_g.3df" };
-
-int get_next_mode(int drawing_mode)
+int main_loop(object3d_t* obj, vector3d_t* light_source, drawcontext_t* drawcontext)
 {
-    // next mode not found -> should exit
-    return -1;
-}
+    int do_loop = 1;
+    int quit = 0;
+    char key;
 
-void main_loop(object3d_t* obj, vector3d_t* light_source, drawcontext_t* drawcontext)
-{
-    int drawing_mode = 0;
-
-    while (drawing_mode != -1) {
+    while (do_loop) {
         update_object3d(obj);
         draw_object3d(obj, light_source, drawcontext);
 
@@ -34,10 +26,20 @@ void main_loop(object3d_t* obj, vector3d_t* light_source, drawcontext_t* drawcon
         timer_wait();
 
         if (is_key_pressed()) {
-            get_key_code();
-            drawing_mode = get_next_mode(drawing_mode);
+            key = get_key_code();
+            if (key == 27) {
+                // escape key pressed
+                do_loop = 0;
+                quit = 1;
+            }
+            else if (key == 32) {
+                // space key pressed
+                do_loop = 0;
+            }
         }
     }
+
+    return quit;
 }
 
 /*
@@ -163,60 +165,97 @@ void display_palette(unsigned char* texturedata, unsigned char* buffer)
     }
 }
 
-void do_bump_mapping()
+int initialize_cube(object3d_t* cubeobj, texturemanager_t* tm)
 {
-    int is_success = 0;
+    int is_success;
+    const char* texturefiles[20] = { "assets/work/col32/metlplt.pcx", "assets/work/col32/trak_g.pcx" , "assets/work/col32/02camino.pcx", "assets/work/col32/floor_d.pcx", "assets/work/col32/floor_f.pcx", "assets/work/col32/floor_g.pcx" };
+    //const char* texturefiles[20] = { "assets/glide/metlplt.3df", "assets/glide/trak_g.3df" , "assets/glide/02camino.3df", "assets/glide/floor_d.3df", "assets/glide/floor_f.3df", "assets/glide/floor_g.3df" };
+
+    is_success = create_cube(cubeobj, texturefiles, 6, tm);
+    if (is_success) {
+        reset_and_scale_object3d(cubeobj, 100.f);
+        //save_txt_object3d(cubeobj, "cubeobj.txt");
+        cubeobj->adx = 1;
+        cubeobj->ady = 1;
+        cubeobj->adz = 2;
+    }
+
+    return is_success;
+}
+
+int initialize_torus(object3d_t* torusobj, texturemanager_t* tm)
+{
+    int is_success;
+
+    is_success = load_object3d(torusobj, "assets/models/torus.3d");
+    if (is_success) {
+        reset_and_scale_object3d(torusobj, 110.f);
+        //save_txt_object3d(torusobj, "torusobj.txt");
+        torusobj->adx = 1;
+        torusobj->ady = 1;
+        torusobj->adz = 2;
+
+        is_success = set_envmap(torusobj, "assets/envmaps/envmap.pcx", tm);
+        if (!is_success) {
+            unload_object3d(torusobj);
+        }
+    }
+
+    return is_success;
+}
+
+int do_bump_mapping()
+{
+    int is_success, quit = 0;
 
     drawcontext_t dc;
-    object3d_t objcube;
+    object3d_t cubeobj, torusobj;
     vector3d_t light = { -1, 0, 0 };
     texturemanager_t tm;
-
-    unsigned char palette[768];
 
     is_success = create_manager(&tm);
 
     if (is_success) {
-        is_success = create_cube(&objcube, texturefiles, 6, &tm);
-        //is_success = load_object3d(&objcube, "assets/models/torus.3d");
-        //TODO handle error !
-        //is_success = set_envmap(&objcube, "assets/envmaps/envmap.pcx", &tm);
-
+        is_success = initialize_cube(&cubeobj, &tm);
         if (is_success) {
-            reset_and_scale_object3d(&objcube, 100.f);
-            save_txt_object3d(&objcube, "objcube.txt");
-            objcube.adx = 1;
-            objcube.ady = 1;
-            objcube.adz = 2;
-                
-            printf("All good. Press any key to start...\n");
-            get_key_code();
-        
-            is_success = create_context(&dc);
-            set_context_palette(&dc, objcube.faces[0].mapper.texture->bitmap.palette);
-            /*
-            create_phong_palette(palette);
-            memcpy(palette, asmshade_palette, 768);
-            compute_palette_levels(objcube.textures[0].palette, palette, 32);
-            is_success = create_context(&dc, palette);
-            */
+            is_success = initialize_torus(&torusobj, &tm);
+
             if (is_success) {
-                /*
-                display_palette(objcube.textures[0].data, dc.framebuffer);
-                flip_buffer(&dc);
+                printf("All good. Press any key to start...\n");
                 get_key_code();
+                
+                is_success = create_context(&dc);
+                /*
+                create_phong_palette(palette);
+                memcpy(palette, asmshade_palette, 768);
+                compute_palette_levels(objcube.textures[0].palette, palette, 32);
                 */
-                main_loop(&objcube, &light, &dc);
-        
-                destroy_context(&dc);
+                if (is_success) {
+                    /*
+                    display_palette(objcube.textures[0].data, dc.framebuffer);
+                    flip_buffer(&dc);
+                    get_key_code();
+                    */
+                    while (!quit) {
+                        set_context_palette(&dc, cubeobj.faces[0].mapper.texture->bitmap.palette);
+                        set_draw_mode(&dc, MODE_TEXTURE);
+                        quit = main_loop(&cubeobj, &light, &dc);
+                    
+                        if (!quit) {
+                            set_context_palette(&dc, torusobj.faces[0].mapper.texture->bitmap.palette);
+                            set_draw_mode(&dc, MODE_ENVMAP);
+                            quit = main_loop(&torusobj, &light, &dc);
+                        }
+                    }
+
+                    destroy_context(&dc);
+                }
+                unload_object3d(&torusobj);
             }
-        
-            unload_object3d(&objcube);
+            unload_object3d(&cubeobj);
         }
         destroy_manager(&tm);
     }
 
-    if (!is_success) {
-        //TODO 
-    }
+    return is_success;
 }
