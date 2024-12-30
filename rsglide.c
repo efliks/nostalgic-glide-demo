@@ -92,7 +92,6 @@ void set_draw_mode(drawcontext_t* dc, drawmode_t mode)
     dc->drawmode = mode;
 
     switch (dc->drawmode) {
-    case MODE_GOURAUD:
     case MODE_ENVMAP:
         // flat lit
         grColorCombine(GR_COMBINE_FUNCTION_SCALE_OTHER, 
@@ -100,6 +99,7 @@ void set_draw_mode(drawcontext_t* dc, drawmode_t mode)
             GR_COMBINE_LOCAL_CONSTANT, 
             GR_COMBINE_OTHER_TEXTURE, FXFALSE);
         break;
+    case MODE_GOURAUD:
     case MODE_TEXTURE:
         // rgb lit
         grColorCombine(GR_COMBINE_FUNCTION_SCALE_OTHER, 
@@ -159,6 +159,51 @@ void select_texture(glidetexture_t* gt, drawcontext_t* dc)
     }
 }
 
+void configure_envmapped_triangle(GrVertex* v1, GrVertex* v2, GrVertex* v3, facedata_t* f)
+{
+    v1->tmuvtx[0].sow = (f->v1->rotated_normal.z * 127 + 127) * f->v1->oow;
+    v1->tmuvtx[0].tow = (f->v1->rotated_normal.y * 127 + 127) * f->v1->oow;
+
+    v2->tmuvtx[0].sow = (f->v2->rotated_normal.z * 127 + 127) * f->v2->oow;
+    v2->tmuvtx[0].tow = (f->v2->rotated_normal.y * 127 + 127) * f->v2->oow;
+
+    v3->tmuvtx[0].sow = (f->v3->rotated_normal.z * 127 + 127) * f->v3->oow;
+    v3->tmuvtx[0].tow = (f->v3->rotated_normal.y * 127 + 127) * f->v3->oow;
+}
+
+void configure_textured_triangle(GrVertex* v1, GrVertex* v2, GrVertex* v3, facedata_t* f)
+{
+    //FIXME
+    v1->tmuvtx[0].sow = (float)(f->mapper.s1 >> 7) * 255 * f->v1->oow;
+    v1->tmuvtx[0].tow = (float)(f->mapper.t1 >> 7) * 255 * f->v1->oow;
+
+    v2->tmuvtx[0].sow = (float)(f->mapper.s2 >> 7) * 255 * f->v2->oow;
+    v2->tmuvtx[0].tow = (float)(f->mapper.t2 >> 7) * 255 * f->v2->oow;
+
+    v3->tmuvtx[0].sow = (float)(f->mapper.s3 >> 7) * 255 * f->v3->oow;
+    v3->tmuvtx[0].tow = (float)(f->mapper.t3 >> 7) * 255 * f->v3->oow;
+}
+
+void configure_gouraud_triangle(GrVertex* v1, GrVertex* v2, GrVertex* v3, facedata_t* f, vector3d_t* light)
+{
+    float i1, i2, i3;
+
+    i1 = compute_intensity(&f->v1->rotated_normal, light);
+    v1->r = i1;
+    v1->g = i1;
+    v1->b = i1;
+    
+    i2 = compute_intensity(&f->v2->rotated_normal, light);
+    v2->r = i2;
+    v2->g = i2;
+    v2->b = i2;
+    
+    i3 = compute_intensity(&f->v3->rotated_normal, light);
+    v3->r = i3;
+    v3->g = i3;
+    v3->b = i3;
+}
+
 void draw_object3d(object3d_t* obj, vector3d_t* light, drawcontext_t* dc)
 {
     int i;
@@ -166,7 +211,6 @@ void draw_object3d(object3d_t* obj, vector3d_t* light, drawcontext_t* dc)
     facedata_t *f;
     faceorder_t* fo = obj->faceorder;
 
-    float i1, i2, i3;
     GrVertex v1, v2, v3;
     glidetexture_t* gt;
 
@@ -181,10 +225,6 @@ void draw_object3d(object3d_t* obj, vector3d_t* light, drawcontext_t* dc)
 
     for (i = 0; i < obj->numvisible; i++) {
         f = fo->face;
-        i1 = compute_intensity(&f->v1->rotated_normal, light);
-        i2 = compute_intensity(&f->v2->rotated_normal, light);
-        i3 = compute_intensity(&f->v3->rotated_normal, light);
-
         v1.x = f->v1->translated_point.x * scalex + corrx;
         v1.y = f->v1->translated_point.y * scaley + corry;
                                                 
@@ -196,38 +236,25 @@ void draw_object3d(object3d_t* obj, vector3d_t* light, drawcontext_t* dc)
 
         gt = &f->mapper.texture->glidetexture;
         select_texture(gt, dc);
-
-        //FIXME
+    
         v1.oow = f->v1->oow;
-        v1.tmuvtx[0].sow = (float)(f->mapper.s1 >> 7) * 255 * f->v1->oow;
-        v1.tmuvtx[0].tow = (float)(f->mapper.t1 >> 7) * 255 * f->v1->oow;
-
         v2.oow = f->v2->oow;
-        v2.tmuvtx[0].sow = (float)(f->mapper.s2 >> 7) * 255 * f->v2->oow;
-        v2.tmuvtx[0].tow = (float)(f->mapper.t2 >> 7) * 255 * f->v2->oow;
-
         v3.oow = f->v3->oow;
-        v3.tmuvtx[0].sow = (float)(f->mapper.s3 >> 7) * 255 * f->v3->oow;
-        v3.tmuvtx[0].tow = (float)(f->mapper.t3 >> 7) * 255 * f->v3->oow;
 
-        //FIXME
-        v1.r = i1;
-        v1.g = i1;
-        v1.b = i1;
-        
-        v2.r = i2;
-        v2.g = i2;
-        v2.b = i2;
-        
-        v3.r = i3;
-        v3.g = i3;
-        v3.b = i3;
-
-        /*
-        v1.a = i1;
-        v2.a = i2;
-        v3.a = i3;
-        */
+        switch (dc->drawmode) {
+        case MODE_TEXTURE:
+            configure_textured_triangle(&v1, &v2, &v3, f);
+            configure_gouraud_triangle(&v1, &v2, &v3, f, light);
+            break;
+        case MODE_ENVMAP:
+            configure_envmapped_triangle(&v1, &v2, &v3, f);
+            break;
+        case MODE_GOURAUD:
+            configure_gouraud_triangle(&v1, &v2, &v3, f, light);
+            break;
+        default:
+            break;
+        }
 
         grDrawTriangle(&v1, &v2, &v3);
 
