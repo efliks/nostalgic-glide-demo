@@ -6,6 +6,8 @@
 #include "bumpobj.h"
 #include "template.h"
 
+#define PROJ_COEFF 256.f
+
 typedef struct
 {
     int v1, v2, v3;
@@ -306,7 +308,17 @@ void update_object3d(object3d_t *obj)
         transform_vector(&v->point, m, &v->rotated_point);
         transform_vector(&v->normal, m, &v->rotated_normal);
 
-        compute_translated_point(&v->rotated_point, &v->translated_point);
+        if (v->rotated_point.x == 0.)
+            v->ooz = 1. / (v->rotated_point.x + 0.0001);
+        else
+            v->ooz = 1. / v->rotated_point.x;
+        if ((v->rotated_point.x + PROJ_COEFF) == 0.)
+            v->oow = 1. / (v->rotated_point.x + PROJ_COEFF + 0.0001);
+        else
+            v->oow = 1. / (v->rotated_point.x + PROJ_COEFF);
+
+        v->translated_point.x = v->rotated_point.y * PROJ_COEFF * v->oow;
+        v->translated_point.y = -v->rotated_point.z * PROJ_COEFF * v->oow;
 
         v++;
     }

@@ -20,8 +20,6 @@ extern float sine[MAX_DEGS], cosine[MAX_DEGS];
 
 void compute_lookup_tables();
 
-void compute_translated_point(point3d_t* p, point2d_t* o);
-
 void compute_rotation_matrix(matrix_t m, int ax, int ay, int az);
 void transform_vector(vector3d_t* v, matrix_t m, vector3d_t* o);
 

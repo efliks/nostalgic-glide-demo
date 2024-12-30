@@ -43,6 +43,7 @@ typedef struct
     point2d_t translated_point;
     vector3d_t normal;
     vector3d_t rotated_normal;
+    float ooz, oow;
 } vertexdata_t;
 
 typedef struct

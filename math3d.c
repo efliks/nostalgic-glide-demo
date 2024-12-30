@@ -2,8 +2,6 @@
 #include <math.h>
 #include "math3d.h"
 
-#define PERSPECTIVE 256.f
-
 float sine[MAX_DEGS], cosine[MAX_DEGS];
 
 
@@ -18,15 +16,6 @@ void compute_lookup_tables()
         sine[i] = sin(y);
         cosine[i] = cos(y);
     }
-}
-
-void compute_translated_point(point3d_t* p, point2d_t* o)
-{
-    float div;
-
-    div = p->x + PERSPECTIVE;
-    o->x = p->y * PERSPECTIVE / div;
-    o->y = -p->z * PERSPECTIVE / div;
 }
 
 void compute_rotation_matrix(matrix_t m, int ax, int ay, int az)

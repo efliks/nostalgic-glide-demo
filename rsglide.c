@@ -198,17 +198,17 @@ void draw_object3d(object3d_t* obj, vector3d_t* light, drawcontext_t* dc)
         select_texture(gt, dc);
 
         //FIXME
-        v1.oow = 1;
-        v1.tmuvtx[0].sow = (float)(f->mapper.s1 >> 7) * 255;
-        v1.tmuvtx[0].tow = (float)(f->mapper.t1 >> 7) * 255;
+        v1.oow = f->v1->oow;
+        v1.tmuvtx[0].sow = (float)(f->mapper.s1 >> 7) * 255 * f->v1->oow;
+        v1.tmuvtx[0].tow = (float)(f->mapper.t1 >> 7) * 255 * f->v1->oow;
 
-        v2.oow = 1;
-        v2.tmuvtx[0].sow = (float)(f->mapper.s2 >> 7) * 255;
-        v2.tmuvtx[0].tow = (float)(f->mapper.t2 >> 7) * 255;
+        v2.oow = f->v2->oow;
+        v2.tmuvtx[0].sow = (float)(f->mapper.s2 >> 7) * 255 * f->v2->oow;
+        v2.tmuvtx[0].tow = (float)(f->mapper.t2 >> 7) * 255 * f->v2->oow;
 
-        v3.oow = 1;
-        v3.tmuvtx[0].sow = (float)(f->mapper.s3 >> 7) * 255;
-        v3.tmuvtx[0].tow = (float)(f->mapper.t3 >> 7) * 255;
+        v3.oow = f->v3->oow;
+        v3.tmuvtx[0].sow = (float)(f->mapper.s3 >> 7) * 255 * f->v3->oow;
+        v3.tmuvtx[0].tow = (float)(f->mapper.t3 >> 7) * 255 * f->v3->oow;
 
         //FIXME
         v1.r = i1;
