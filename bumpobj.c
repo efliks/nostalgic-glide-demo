@@ -44,12 +44,14 @@ int allocate_object3d(object3d_t* obj)
 
     if (obj->vertices) {
         obj->faces = (facedata_t *)malloc(obj->numfaces * sizeof(facedata_t));
-
         if (obj->faces) {
             obj->faceorder = (faceorder_t *)malloc(obj->numfaces * sizeof(faceorder_t));
-
             if (obj->faceorder) {
                 is_success = 1;
+                printf("Allocated %d vertices and %d faces (total %d bytes)\n", 
+                    obj->numpoints, obj->numfaces, 
+                    sizeof(vertexdata_t) * obj->numpoints + 
+                        (sizeof(facedata_t) + sizeof(faceorder_t)) * obj->numfaces);
             }
         }
     }
@@ -390,6 +392,76 @@ int load_object3d(object3d_t* obj, char* filename)
 
                 compute_face_normals(obj);
                 compute_vertex_normals(obj);
+            }
+        }
+
+        fclose(p);
+    }
+
+    return is_success;
+}
+
+void load_off_vertices(object3d_t* obj, FILE* p)
+{
+    int i;
+    char line[128];
+
+    vertexdata_t* v = obj->vertices;
+
+    for (i = 0; i < obj->numpoints; i++) {
+        if (fgets(line, 128, p)) {
+            sscanf(line, " %f %f %f ", &v->point.x, &v->point.y, &v->point.z);
+            v++;
+        }
+    }
+}
+
+void load_off_faces(object3d_t* obj, FILE* p)
+{
+    int i;
+    int facetype, num1, num2, num3;
+    char line[128];
+
+    facedata_t* f = obj->faces;
+
+    for (i = 0; i < obj->numfaces; i++) {
+        if (fgets(line, 128, p)) {
+            sscanf(line, " %d %d %d %d ", &facetype, &num1, &num2, &num3);
+            if (facetype == 3) {
+                f->v1 = &obj->vertices[num1];
+                f->v2 = &obj->vertices[num2];
+                f->v3 = &obj->vertices[num3];
+
+                // No texture available
+                f->mapper.texture = NULL;
+
+                f++;
+            }
+        }
+    }
+}
+
+int load_off_object(object3d_t* obj, char* filename)
+{
+    FILE* p;
+    int is_success = 0, dummy;
+    char line[128];
+
+    p = fopen(filename, "r+b");
+    if (p) {
+        fgets(line, 128, p);
+        if (strcmp(line, "OFF\n") == 0) {
+            fgets(line, 128, p);
+            sscanf(line, " %d %d %d ", &obj->numpoints, &obj->numfaces, &dummy);
+
+            if (allocate_object3d(obj)) {
+                load_off_vertices(obj, p);
+                load_off_faces(obj, p);
+
+                compute_face_normals(obj);
+                compute_vertex_normals(obj);
+
+                is_success = 1;
             }
         }
 
