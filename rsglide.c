@@ -62,6 +62,7 @@ int create_context(drawcontext_t* dc)
             dc->glide.last_memory_addr = grTexMinAddress(GR_TMU0);
             dc->glide.max_memory_addr = grTexMaxAddress(GR_TMU0);
             dc->glide.last_used_addr = 0;
+            dc->glide._download_count = 0;
 
             //decal texture
             grTexCombine( GR_TMU0,
@@ -100,6 +101,12 @@ void set_draw_mode(drawcontext_t* dc, drawmode_t mode)
             GR_COMBINE_OTHER_TEXTURE, FXFALSE);
         break;
     case MODE_GOURAUD:
+        grColorCombine(GR_COMBINE_FUNCTION_LOCAL,
+            GR_COMBINE_FACTOR_NONE,
+            GR_COMBINE_LOCAL_ITERATED,
+            GR_COMBINE_OTHER_NONE,
+            FXFALSE);
+        break;
     case MODE_TEXTURE:
         // rgb lit
         grColorCombine(GR_COMBINE_FUNCTION_SCALE_OTHER, 
@@ -139,8 +146,9 @@ void download_to_tmu(glidetexture_t* gt, drawcontext_t* dc)
         
         gt->is_in_tmu = 1;
         gt->tmu_memory_addr = (unsigned long)dc->glide.last_memory_addr;
-
         dc->glide.last_memory_addr += req_memory;
+
+        dc->glide._download_count++;
     }
 }
 
@@ -235,7 +243,6 @@ void draw_object3d(object3d_t* obj, vector3d_t* light, drawcontext_t* dc)
         v3.y = f->v3->translated_point.y * scaley + corry;
 
         gt = &f->mapper.texture->glidetexture;
-        select_texture(gt, dc);
     
         v1.oow = f->v1->oow;
         v2.oow = f->v2->oow;
@@ -243,10 +250,12 @@ void draw_object3d(object3d_t* obj, vector3d_t* light, drawcontext_t* dc)
 
         switch (dc->drawmode) {
         case MODE_TEXTURE:
+            select_texture(gt, dc);
             configure_textured_triangle(&v1, &v2, &v3, f);
             configure_gouraud_triangle(&v1, &v2, &v3, f, light);
             break;
         case MODE_ENVMAP:
+            select_texture(gt, dc);
             configure_envmapped_triangle(&v1, &v2, &v3, f);
             break;
         case MODE_GOURAUD:
