@@ -11,8 +11,8 @@ name cubedemo
 file bumpmain.obj
 file bumpobj.obj
 file bumptri.obj
-file clock.obj
-file low.obj
+file vga13h.obj
+file sys.obj
 file main.obj
 file math3d.obj
 file raster.obj

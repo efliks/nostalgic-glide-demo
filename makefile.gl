@@ -5,8 +5,7 @@ CCOPTS =
 GLOBOBJS = &
  bumpmain.obj &
  bumpobj.obj &
- clock.obj &
- low.obj &
+ sys.obj &
  main.obj &
  math3d.obj &
  rsglide.obj &

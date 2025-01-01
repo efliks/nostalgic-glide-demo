@@ -3,13 +3,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "low.h"
-#include "clock.h"
-
 #include "bumpobj.h"
 #include "raster.h"
 #include "texture.h"
 #include "texman.h"
+#include "sys.h"
 
 int main_loop(object3d_t* obj, vector3d_t* light_source, drawcontext_t* drawcontext)
 {

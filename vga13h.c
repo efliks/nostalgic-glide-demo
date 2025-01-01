@@ -1,15 +1,9 @@
-/*****************************************
-  Mroczna Harmonia
-
-  low.c   Low level routines to access hardware
-
-  (C) 2001, 2023  M. Feliks
-*****************************************/
 
 #include <dos.h>
 #include <i86.h>
-#include <conio.h>
 #include <string.h> // for memset
+
+#include "vga13h.h"
 
 #ifdef __386__
 #define DO_INT(i, r_in, r_out) int386(i, r_in, r_out)
@@ -24,16 +18,6 @@
 static unsigned char default_palette[768];
 
 
-int is_key_pressed()
-{
-    return kbhit() ? 1 : 0;
-}
-
-char get_key_code()
-{
-    return getch();
-}
-
 void set_mode13h()
 {
     union REGS regs;
@@ -41,7 +25,7 @@ void set_mode13h()
     regs.w.ax = 0x13;
     DO_INT(0x10, &regs, &regs);
 
-    //dump_palette(default_palette);
+    dump_palette(default_palette);
 }
 
 void unset_mode13h()
@@ -70,23 +54,23 @@ void retrace()
         ;
 }
 
-void set_palette(unsigned char* my_pal)
+void set_palette(unsigned char* palette)
 {
     int i;
         
     outp(0x03c8, 0);
     for (i = 0; i < 768; i++) {
-        outp(0x03c9, my_pal[i]);
+        outp(0x03c9, palette[i]);
     }
 }
 
-void dump_palette(unsigned char* my_pal)
+void dump_palette(unsigned char* palette)
 {
     int i;
         
     outp(0x03c7, 0);
     for (i = 0; i < 768; i++) {
-        my_pal[i] = inp(0x03c9);
+        palette[i] = inp(0x03c9);
     }
 }
 

@@ -26,8 +26,7 @@ name cubegl
 
 file bumpmain.obj
 file bumpobj.obj
-file clock.obj
-file low.obj
+file sys.obj
 file main.obj
 file math3d.obj
 file rsglide.obj

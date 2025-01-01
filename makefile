@@ -5,8 +5,8 @@ GLOBOBJS = &
  bumpmain.obj &
  bumpobj.obj &
  bumptri.obj &
- clock.obj &
- low.obj &
+ vga13h.obj &
+ sys.obj &
  main.obj &
  math3d.obj &
  raster.obj &

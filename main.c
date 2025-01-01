@@ -1,5 +1,5 @@
 
-#include "clock.h"
+#include "sys.h"
 #include "math3d.h"
 #include "bumpmain.h"
 

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "raster.h"
-#include "low.h"
+#include "vga13h.h"
 #include "bumptri.h"
 
 int create_context(drawcontext_t* dc)
