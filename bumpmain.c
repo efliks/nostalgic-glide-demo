@@ -166,9 +166,17 @@ void display_palette(unsigned char* texturedata, unsigned char* buffer)
 int initialize_cube(object3d_t* cubeobj, texturemanager_t* tm)
 {
     int is_success;
-    const char* texturefiles[20] = { "assets/work/col32/metlplt.pcx", "assets/work/col32/trak_g.pcx" , "assets/work/col32/02camino.pcx", "assets/work/col32/floor_d.pcx", "assets/work/col32/floor_f.pcx", "assets/work/col32/floor_g.pcx" };
-    //const char* texturefiles[20] = { "assets/glide/metlplt.3df", "assets/glide/trak_g.3df" , "assets/glide/02camino.3df", "assets/glide/floor_d.3df", "assets/glide/floor_f.3df", "assets/glide/floor_g.3df" };
-
+#ifdef GLIDE_BUILD
+  const char* texturefiles[20] = {
+      "assets/textures/camino2.3df", "assets/textures/floor_g.3df",
+      "assets/textures/metal.3df",   "assets/textures/trak_g.3df",
+      "assets/textures/univ42.3df",  "assets/textures/univ43.3df"};
+#else
+  const char* texturefiles[20] = {
+      "assets/textures/camino2.pcx", "assets/textures/floor_g.pcx",
+      "assets/textures/metal.pcx",   "assets/textures/trak_g.pcx",
+      "assets/textures/univ42.pcx",  "assets/textures/univ43.pcx"};
+#endif
     is_success = create_cube(cubeobj, texturefiles, 6, tm);
     if (is_success) {
         reset_and_scale_object3d(cubeobj, 100.f);
@@ -193,7 +201,11 @@ int initialize_torus(object3d_t* torusobj, texturemanager_t* tm)
         torusobj->ady = 1;
         torusobj->adz = 2;
 
-        is_success = set_envmap(torusobj, "assets/envmaps/envmap.pcx", tm);
+#ifdef GLIDE_BUILD
+    is_success = set_envmap(torusobj, "assets/envmaps/envmap.3df", tm);
+#else
+    is_success = set_envmap(torusobj, "assets/envmaps/envmap.pcx", tm);
+#endif
         if (!is_success) {
             unload_object3d(torusobj);
         }
