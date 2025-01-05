@@ -1,18 +1,12 @@
 # Glide demo
 
-It was around 1998 that I wanted a Voodoo accelerator in my PC, but the price 
-tag was never accepted by my parents. 27 years later, I can finally explore 
-this legacy hardware.
+Spinning 3D objects using the 3Dfx Glide library under MS-DOS. 
 
-I made some spinning 3D objects using the 3Dfx Glide library under MS-DOS. It 
-was hard to get through the documentation and example code that never wanted 
-to compile. I drew a lot of inspiration from PCRetroTech who faced similar 
-challenges, and documented them in his videos [here](https://www.youtube.com/watch?v=jjbqfmbs6Q8), 
-and [here](https://www.youtube.com/watch?v=i47tSCI0L2w).
-
-The code is based on some recycled code of mine from the early 2000s, so don't 
-expect master software engineering. The idea is just to put some pixels on 
-the screen.
+I drew inspiration from PCRetroTech who made two videos ([#1](https://www.youtube.com/watch?v=jjbqfmbs6Q8), 
+and [#2](https://www.youtube.com/watch?v=i47tSCI0L2w)) documenting his 
+challenges with Glide programming. The code is based on some recycled code 
+of mine from the early 2000s, so don't expect master level engineering. The 
+idea is just to put some pixels on the screen.
 
 Apart from being a hobby, this project can be used for testing Voodoo cards 
 under MS-DOS, because it fits into one floppy disk.
@@ -74,26 +68,18 @@ I am not familiar with versions of DOSBox other than the one I tested.
 
 ### Textures
 
-The textures need some processing before they can be used. 
-
-The software rasterizer expects textures in the legacy PCX format. All PCX 
-textures have a size of 128x128 pixels, because larger textures would not work 
-with the 16-bit build. The Glide rasterizer reads textures in the 3DF format. 
-The 3DF textures have a size of 256x256, which is the maximum supported by 
-Voodoo and Voodoo 2 boards.
+The two rasterizers read textures in different formats. These are legacy PCX 
+used by the software rasterizer, and 3DF used by the Glide rasterizer. The 3DF 
+textures have a size of 256x256, which is the maximum supported by Voodoo and 
+Voodoo 2 boards.
 
 To process the textures, use the included scripts process.sh and texus.bat. 
-The texus.bat script should be run on the target MS-DOS system where the 
-TexUS tool is available. 
-
-### Phong lightmaps
+The texus.bat script should be run on the target MS-DOS system where texus.exe
+is installed.
 
 Some objects in the demo use the Phong illumination model. A Phong lightmap is 
 nothing but a special texture. This texture is included in the repository in 
-assets/envmaps.
-
-The lightmap as well as the object using the lightmap come from one of my 
-[old projects](https://github.com/efliks/doseffects).
+assets/envmaps, and comes from one of my [old projects](https://github.com/efliks/doseffects).
 
 ## Execute
 
