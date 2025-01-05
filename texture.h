@@ -38,7 +38,9 @@ typedef struct
 
 // functions
 
-int load_texture(texture_t *, char *);
+int load_texture(texture_t *, const char *);
 void unload_texture(texture_t *);
+
+void copy_texture(texture_t *, texture_t *);
 
 #endif // _TEXTURE_H

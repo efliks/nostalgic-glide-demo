@@ -128,7 +128,7 @@ void draw_object3d(object3d_t* obj, vector3d_t* lightvector, drawcontext_t* dc)
             draw_envmapped_triangle(x1, y1, x2, y2, x3, y3, f, dc);
             break;
         case MODE_GOURAUD:
-            draw_gouraud_triangle(x1, y1, x2, y2, x3, y3, lightvector, f, dc);
+            draw_gouraud_triangle(x1, y1, x2, y2, x3, y3, f, lightvector, dc);
             break;
         default:
             break;

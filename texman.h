@@ -15,7 +15,7 @@ typedef struct
     cachedtexture_t* textures;
 } texturemanager_t;
 
-texture_t* get_texture(char *, texturemanager_t *);
+texture_t* get_texture(const char *, texturemanager_t *);
 
 int create_manager(texturemanager_t *);
 void destroy_manager(texturemanager_t *);

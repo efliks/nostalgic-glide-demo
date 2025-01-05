@@ -25,11 +25,9 @@ void reset_and_scale_object3d(object3d_t *, float);
 void compute_vertex_normals(object3d_t *);
 void compute_face_normals(object3d_t* obj);
 
-int create_face_from_template(facedata_t *, const facetempl_t *, vertexdata_t *, char **, texturemanager_t *);
+int create_face_from_template(facedata_t *, const facetempl_t *, vertexdata_t *, const char **, texturemanager_t *);
 
-int create_from_template(object3d_t *, const point3d_t *, const facetempl_t *, char **, int, int, texturemanager_t *);
-
-//int create_cube(object3d_t *, char** texturefiles, int numtextures);
+int create_from_template(object3d_t *, const point3d_t *, const facetempl_t *, const char **, int, int, texturemanager_t *);
 
 int allocate_object3d(object3d_t* obj);
 
@@ -78,12 +76,12 @@ void unload_object3d(object3d_t *obj)
     }
 }
 
-int create_cube(object3d_t* obj, char** texturefiles, int numtextures, texturemanager_t* tm)
+int create_cube(object3d_t* obj, const char** texturefiles, int numtextures, texturemanager_t* tm)
 {
     return create_from_template(obj, cubepoints, cubefaces, texturefiles, 8, 12, tm);
 }
 
-int create_from_template(object3d_t *obj, const point3d_t* points, const facetempl_t* faces, char** texturefiles, int numpoints, int numfaces, texturemanager_t* tm)
+int create_from_template(object3d_t *obj, const point3d_t* points, const facetempl_t* faces, const char** texturefiles, int numpoints, int numfaces, texturemanager_t* tm)
 {
     int i, is_success;
 
@@ -116,7 +114,7 @@ int create_from_template(object3d_t *obj, const point3d_t* points, const facetem
     return is_success;
 }
 
-int create_face_from_template(facedata_t* face, const facetempl_t* templ, vertexdata_t* vertices, char** texturefiles, texturemanager_t* tm)
+int create_face_from_template(facedata_t* face, const facetempl_t* templ, vertexdata_t* vertices, const char** texturefiles, texturemanager_t* tm)
 {
     int is_good;
 
@@ -217,7 +215,6 @@ void reset_and_scale_object3d(object3d_t *obj, float scalefactor)
         add_vector(&center, &v->point, &center);
         v++;
     }
-
     scale_vector(1 / (float)obj->numpoints, &center, &center);
 
     v = obj->vertices;
@@ -238,7 +235,6 @@ void reset_and_scale_object3d(object3d_t *obj, float scalefactor)
 
     scale = scalefactor / maxd;
     v = obj->vertices;
-
     for (i = 0; i < obj->numpoints; i++) {
         scale_vector(scale, &v->point, &v->point);
         v++;
@@ -286,7 +282,15 @@ void sort_faces(object3d_t *obj, vector3d_t* lookvector)
 
 int compare_faces(const void* a, const void* b)
 {
-    return ((faceorder_t *) a)->depth < ((faceorder_t *) b)->depth;
+    float da, db;
+    da = ((faceorder_t *) a)->depth;
+    db = ((faceorder_t *) b)->depth;
+    if (da > db)
+        return -1;
+    if (da < db)
+        return 1;
+
+    return 0;
 }
 
 void update_object3d(object3d_t *obj)

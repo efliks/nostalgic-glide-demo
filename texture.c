@@ -75,7 +75,7 @@ void read_palette(FILE* fp, unsigned char* palette)
     }
 }
 
-int load_bitmap(bitmap_t* bitmap, char* filename)
+int load_bitmap(bitmap_t* bitmap, const char* filename)
 {
     pcxhead_t header;
     FILE* fp;
@@ -115,7 +115,7 @@ int load_bitmap(bitmap_t* bitmap, char* filename)
     return is_success;
 }
 
-int load_texture(texture_t* texture, char* filename) 
+int load_texture(texture_t* texture, const char* filename) 
 {
     int is_success;
 
@@ -131,4 +131,13 @@ int load_texture(texture_t* texture, char* filename)
 void unload_texture(texture_t* texture)
 {
     unload_bitmap(&texture->bitmap);
+}
+
+void copy_texture(texture_t* dest, texture_t* src)
+{
+    // shallow copy is good enough
+    dest->bitmap.data = src->bitmap.data;
+    dest->bitmap.palette = src->bitmap.palette;
+
+    dest->texturetype = src->texturetype;
 }

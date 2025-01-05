@@ -25,7 +25,7 @@ static GrTexTable_t texTableType( GrTextureFormat_t format )
 
 // End of copy from 3dfx tlib
 
-int load_3dffile(Gu3dfInfo* gu, char* filename)
+int load_3dffile(Gu3dfInfo* gu, const char* filename)
 {
     int is_good = 0;
 
@@ -52,7 +52,7 @@ void unload_glide_texture(glidetexture_t* gt)
     }
 }
 
-int load_glide_texture(glidetexture_t* gt, char* filename)
+int load_glide_texture(glidetexture_t* gt, const char* filename)
 {
     int is_good = 0;
 
@@ -88,7 +88,7 @@ int load_glide_texture(glidetexture_t* gt, char* filename)
     return is_good;
 }
 
-int load_texture(texture_t* texture, char* filename) 
+int load_texture(texture_t* texture, const char* filename) 
 {
     int is_success;
 
@@ -104,4 +104,22 @@ int load_texture(texture_t* texture, char* filename)
 void unload_texture(texture_t* texture)
 {
     unload_glide_texture(&texture->glidetexture);
+}
+
+void copy_texture(texture_t* dest, texture_t* src)
+{
+    dest->glidetexture.is_in_tmu = src->glidetexture.is_in_tmu;
+    dest->glidetexture.tmu_memory_addr = src->glidetexture.tmu_memory_addr;
+
+    dest->glidetexture.info.smallLod = src->glidetexture.info.smallLod;
+    dest->glidetexture.info.largeLod = src->glidetexture.info.largeLod;
+    dest->glidetexture.info.aspectRatio = src->glidetexture.info.aspectRatio;
+    dest->glidetexture.info.format = src->glidetexture.info.format;
+    // shallow copy is good enough
+    dest->glidetexture.info.data = src->glidetexture.info.data;
+
+    dest->glidetexture.tabletype = src->glidetexture.tabletype;
+    memcpy(&dest->glidetexture.table, &src->glidetexture.table, sizeof(GuTexTable));
+
+    dest->texturetype = src->texturetype;
 }

@@ -20,6 +20,18 @@ unsigned long compute_fnv1a(const uint8_t* data, size_t size)
     return (unsigned long)h;
 }
 
+void copy_textures(cachedtexture_t* d, cachedtexture_t* s, int numtextures)
+{
+    int i;
+    cachedtexture_t *dest = d, *src = s;
+
+    for (i = 0; i < numtextures; i++, dest++, src++) {
+        dest->texture_id = src->texture_id;
+        copy_texture(&dest->texture, &src->texture);
+        // skip unload of texture data to allow shallow copy
+    }
+}
+
 int is_space_for_texture(texturemanager_t* tm)
 {
     int is_good = 1;
@@ -30,7 +42,7 @@ int is_space_for_texture(texturemanager_t* tm)
         newt = (cachedtexture_t *)malloc(sizeof(cachedtexture_t) * 2 * tm->_numallocated);
         is_good = (newt != NULL) ? 1 : 0;
         if (is_good) {
-            memcpy(newt, tm->textures, sizeof(cachedtexture_t) * tm->numtextures);
+            copy_textures(newt, tm->textures, tm->numtextures);
             free(tm->textures);
             tm->textures = newt;
             tm->_numallocated = 2 * tm->_numallocated;
@@ -40,7 +52,7 @@ int is_space_for_texture(texturemanager_t* tm)
     return is_good;
 }
 
-texture_t* get_texture(char* filename, texturemanager_t* tm)
+texture_t* get_texture(const char* filename, texturemanager_t* tm)
 {
     int i;
     unsigned long texture_id;

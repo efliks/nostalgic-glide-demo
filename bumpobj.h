@@ -81,7 +81,7 @@ void update_object3d(object3d_t *);
 void reset_object3d(object3d_t *);
 void reset_and_scale_object3d(object3d_t *, float);
 
-int create_cube(object3d_t *, char **, int, texturemanager_t *);
+int create_cube(object3d_t *, const char **, int, texturemanager_t *);
 int load_object3d(object3d_t *, char *);
 int load_off_object(object3d_t *, char *);
 int set_envmap(object3d_t *, char *, texturemanager_t *);

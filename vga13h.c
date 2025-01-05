@@ -1,6 +1,6 @@
 
-#include <dos.h>
 #include <i86.h>
+#include <conio.h>
 #include <string.h> // for memset
 
 #include "vga13h.h"
