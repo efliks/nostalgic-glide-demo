@@ -2,10 +2,9 @@
 
 Spinning 3D objects using the 3Dfx Glide library under MS-DOS. 
 
-I drew inspiration from PCRetroTech who made two videos ([#1](https://www.youtube.com/watch?v=jjbqfmbs6Q8), 
-and [#2](https://www.youtube.com/watch?v=i47tSCI0L2w)) documenting his 
-challenges with Glide programming. The code is based on some recycled code 
-of mine from the early 2000s, so don't expect master level engineering. The 
+Inspired by two videos from PCRetroTech ([#1](https://www.youtube.com/watch?v=jjbqfmbs6Q8), 
+and [#2](https://www.youtube.com/watch?v=i47tSCI0L2w)). The code is based 
+on some recycled code of mine from the early 2000s, and is not optimal. The 
 idea is just to put some pixels on the screen.
 
 Apart from being a hobby, this project can be used for testing Voodoo cards 
@@ -62,19 +61,12 @@ ATTENTION! For the Glide target, run prepare.bat first, then run wmake. This
 is a workaround for the fact that there are too many command line options for 
 the wcc386 compiler.
 
-You can use DOSBox to compile all targets, but it may be that you will only
-be able to run the software rasterizer, because of missing 3Dfx emulation. 
-I am not familiar with versions of DOSBox other than the one I tested.
-
 ### Textures
 
 The two rasterizers read textures in different formats. These are legacy PCX 
-used by the software rasterizer, and 3DF used by the Glide rasterizer. The 3DF 
-textures have a size of 256x256, which is the maximum supported by Voodoo and 
-Voodoo 2 boards.
-
-To process the textures, use the included scripts process.sh and texus.bat. 
-The texus.bat script should be run on the target MS-DOS system where texus.exe
+used by the software rasterizer, and 3DF used by the Glide rasterizer. To 
+process the textures, use the included scripts process.sh and texus.bat. The 
+texus.bat script should be run on the target MS-DOS system where texus.exe
 is installed.
 
 Some objects in the demo use the Phong illumination model. A Phong lightmap is 
