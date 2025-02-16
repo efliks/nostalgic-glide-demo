@@ -7,6 +7,7 @@ option map
 sys dos4g
 name cube386
 
+file bitmap.obj
 file bumpmain.obj
 file bumpobj.obj
 file bumptri.obj

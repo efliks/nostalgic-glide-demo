@@ -3,18 +3,14 @@
 
 #include <glide.h>
 
+#include "bitmap.h"
+
 typedef enum { 
     TEXTURE_SOFT, 
     TEXTURE_GLIDE 
 } texturetype_t;
 
 // structures
-
-typedef struct
-{
-    int width, height;
-    unsigned char *data, *palette;
-} bitmap_t;
 
 typedef struct
 {

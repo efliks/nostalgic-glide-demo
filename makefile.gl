@@ -3,6 +3,7 @@
 CCOPTS =
 
 GLOBOBJS = &
+ bitmap.obj &
  bumpmain.obj &
  bumpobj.obj &
  sys.obj &

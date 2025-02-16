@@ -2,6 +2,7 @@
 CCOPTS = -2 -fp2 -ml -q -zt=100 -I.\dummy
 
 GLOBOBJS = &
+ bitmap.obj &
  bumpmain.obj &
  bumpobj.obj &
  bumptri.obj &

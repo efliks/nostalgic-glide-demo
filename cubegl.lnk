@@ -24,6 +24,7 @@ sys dos4g
 
 name cubegl
 
+file bitmap.obj
 file bumpmain.obj
 file bumpobj.obj
 file sys.obj
