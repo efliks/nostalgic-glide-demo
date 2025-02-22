@@ -71,6 +71,8 @@ int create_context(drawcontext_t* dc)
                           GR_COMBINE_FUNCTION_NONE,
                           GR_COMBINE_FACTOR_NONE,
                           FXFALSE, FXFALSE );
+            // disable mipmapping
+            grTexMipMapMode(GR_TMU0, GR_MIPMAP_DISABLE, FXFALSE);
         
             set_draw_mode(dc, MODE_TEXTURE);    
         }

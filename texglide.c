@@ -6,6 +6,11 @@
 
 #include "texture.h"
 
+typedef struct
+{
+    unsigned char r, g, b;
+} palette_color_t;
+
 // Copy from 3dfx tlib
 static GrTexTable_t texTableType( GrTextureFormat_t format ) 
 {
@@ -25,7 +30,7 @@ static GrTexTable_t texTableType( GrTextureFormat_t format )
 
 // End of copy from 3dfx tlib
 
-int load_3dffile(Gu3dfInfo* gu, const char* filename)
+static int load_3dffile(Gu3dfInfo* gu, const char* filename)
 {
     int is_good = 0;
 
@@ -45,14 +50,14 @@ int load_3dffile(Gu3dfInfo* gu, const char* filename)
     return is_good;
 }
 
-void unload_glide_texture(glidetexture_t* gt)
+static void unload_glide_texture(glidetexture_t* gt)
 {
     if (gt->info.data != NULL) {
         free(gt->info.data);
     }
 }
 
-int load_glide_texture(glidetexture_t* gt, const char* filename)
+static int load_glide_texture(glidetexture_t* gt, const char* filename)
 {
     int is_good = 0;
 
@@ -88,11 +93,120 @@ int load_glide_texture(glidetexture_t* gt, const char* filename)
     return is_good;
 }
 
+static void quantize_palette(palette_color_t* palette, unsigned short* colors)
+{
+    int i;
+    unsigned short red, green, blue, final;
+    palette_color_t pc;
+    float cf;
+
+    for (i = 0; i < 256; i++) {
+        pc = *(palette++);
+
+        cf = (float)(pc.r) / 63. * 255.;
+        red = (unsigned short)(cf);
+
+        cf = (float)(pc.g) / 63. * 255.;
+        green = (unsigned short)(cf);
+
+        cf = (float)(pc.b) / 63. * 255.;
+        blue = (unsigned short)(cf);
+
+        red = (red >> 3) & 0x1f;
+        green = (green >> 2) & 0x3f;
+        blue = (blue >> 3) & 0x1f;
+        final = (red << 11) | (green << 5) | blue;
+        *(colors++) = final;
+    }
+}
+
+static void quantize_to_rgb565(unsigned char* src, palette_color_t* palette, int size, unsigned short* dest)
+{
+    int i;
+    unsigned short colors[256];
+
+    quantize_palette(palette, colors);
+
+    for (i = 0; i < size; i++) {
+        *(dest++) = colors[*(src++)];
+    }
+}
+
+static int load_bitmap_texture(glidetexture_t* gt, const char* filename)
+{
+    bitmap_t tb;
+    GrLOD_t level;
+    int is_success;
+
+    is_success = load_bitmap(&tb, filename);
+
+    if (is_success) {
+        is_success = (tb.width == tb.height && 
+            (tb.width == 128 || 
+            tb.width == 256)) ? 1 : 0;
+
+        if (is_success) {
+            gt->info.data = malloc(tb.width * tb.height * sizeof(unsigned short));
+            is_success = (gt->info.data != NULL) ? 1 : 0;
+
+            if (is_success) {
+                switch (tb.width) {
+                case 128:
+                    level = GR_LOD_128;
+                    break;
+                case 256:
+                    level = GR_LOD_256;
+                    break;
+                default:
+                    break;
+                }
+                gt->info.smallLod = level;
+                gt->info.largeLod = level;
+                gt->info.aspectRatio = GR_ASPECT_1x1;
+
+                //TODO Support other color formats
+                gt->info.format = GR_TEXFMT_RGB_565;
+                quantize_to_rgb565(tb.data, (palette_color_t *)tb.palette, tb.width * tb.height, (unsigned short *)gt->info.data);
+
+                gt->tabletype = -1;
+                gt->is_in_tmu = 0;
+                gt->tmu_memory_addr = -1;
+            }
+        }
+
+        unload_bitmap(&tb);
+    }
+
+    return is_success;
+}
+
+static int is_glide_format(const char* filename)
+{
+    int is_glide = 0;
+    char ext[4], *c;
+
+    c = strrchr(filename, '.');
+    if (c != NULL) {
+        strcpy(ext, ++c);
+        //TODO Compare case insensitive
+        if (strcmp("3df", ext) == 0 || strcmp("3DF", ext) == 0) {
+            is_glide = 1;
+        }
+    }
+
+    return is_glide;
+}
+
 int load_texture(texture_t* texture, const char* filename) 
 {
     int is_success;
 
-    is_success = load_glide_texture(&texture->glidetexture, filename);
+    if (is_glide_format(filename)) {
+        is_success = load_glide_texture(&texture->glidetexture, filename);
+    }
+    else {
+        is_success = load_bitmap_texture(&texture->glidetexture, filename);
+    }
     if (is_success) {
         texture->texturetype = TEXTURE_GLIDE;
         printf("Loaded texture: %s\n", filename);
