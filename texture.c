@@ -20,12 +20,3 @@ void unload_texture(texture_t* texture)
 {
     unload_bitmap(&texture->bitmap);
 }
-
-void copy_texture(texture_t* dest, texture_t* src)
-{
-    // shallow copy is good enough
-    dest->bitmap.data = src->bitmap.data;
-    dest->bitmap.palette = src->bitmap.palette;
-
-    dest->texturetype = src->texturetype;
-}
