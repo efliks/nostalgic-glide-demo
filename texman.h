@@ -3,16 +3,17 @@
 
 #include "texture.h"
 
-typedef struct
+typedef struct cachedtexture_s
 {
     unsigned long texture_id;
     texture_t texture;
+    struct cachedtexture_s *parent, *child;
 } cachedtexture_t;
 
 typedef struct
 {
     int numtextures, _numallocated;
-    cachedtexture_t* textures;
+    cachedtexture_t* root;
 } texturemanager_t;
 
 texture_t* get_texture(const char *, texturemanager_t *);

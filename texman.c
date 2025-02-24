@@ -19,7 +19,7 @@ unsigned long compute_fnv1a(const uint8_t* data, size_t size)
 
     return (unsigned long)h;
 }
-
+/*
 void copy_textures(cachedtexture_t* d, cachedtexture_t* s, int numtextures)
 {
     int i;
@@ -51,6 +51,42 @@ int is_space_for_texture(texturemanager_t* tm)
 
     return is_good;
 }
+*/
+
+static cachedtexture_t* create_node(cachedtexture_t* parent, const char* filename, unsigned long texture_id)
+{
+    cachedtexture_t* node;
+    texture_t texture;
+
+    if (load_texture(&texture, filename)) {
+        node = (cachedtexture_t *)malloc(sizeof(cachedtexture_t));
+        if (node != NULL) {
+            memcpy(&node->texture, &texture, sizeof(texture_t));
+            node->texture_id = texture_id;
+            node->parent = parent;
+            node->child = NULL;
+            // printf("Loaded texture: %d\n", node->texture_id);
+            return node;
+        }
+
+        unload_texture(&texture);
+    }
+
+    return NULL;
+
+    /*
+    node = (cachedtexture_t *)malloc(sizeof(cachedtexture_t));
+    if (node != NULL) {
+        node->parent = parent;
+        node->child = NULL;
+        node->texture_id = texture_id;
+        if (!load_texture(&node->texture, filename)) {
+            free(node);
+            node = NULL;
+        }
+    }
+    */
+}
 
 texture_t* get_texture(const char* filename, texturemanager_t* tm)
 {
@@ -60,6 +96,37 @@ texture_t* get_texture(const char* filename, texturemanager_t* tm)
 
     texture_id = compute_fnv1a(filename, strlen(filename));
 
+    // create root node
+    if (tm->root == NULL) {
+        tm->root = create_node(NULL, filename, texture_id);
+        if (tm->root != NULL) {
+            return &tm->root->texture;
+        }
+    }
+
+    // search for existing texture
+    t = tm->root;
+    while (t != NULL) {
+        if (t->texture_id == texture_id) {
+            return &t->texture;
+        }
+        t = t->child;
+    }
+
+    // create new node
+    t = tm->root;
+    if (t != NULL) {
+        while (t->child != NULL) {
+            t = t->child;
+        }
+        
+        t->child = create_node(t, filename, texture_id);
+        if (t->child != NULL) {
+            return &t->child->texture;
+        }
+    }
+
+    /*
     t = tm->textures;
     for (i = 0; i < tm->numtextures; i++, t++) {
         if (t->texture_id == texture_id) {
@@ -77,6 +144,7 @@ texture_t* get_texture(const char* filename, texturemanager_t* tm)
             return &t->texture;
         }
     }
+    */
 
     printf("Error loading texture: %s\n", filename);
 
@@ -86,6 +154,8 @@ texture_t* get_texture(const char* filename, texturemanager_t* tm)
 int create_manager(texturemanager_t* tm)
 {
     tm->numtextures = 0;
+    tm->root = NULL;
+    /*
 
     // preallocate some textures for a start
     tm->_numallocated = 3;
@@ -95,10 +165,31 @@ int create_manager(texturemanager_t* tm)
     }
 
     return 0;
+    */
+
+    return 1;
 }
 
 void destroy_manager(texturemanager_t* tm)
 {
+    cachedtexture_t *t, *tp;
+
+    t = tm->root;
+    if (t != NULL) {
+        while (t->child != NULL) {
+            t = t->child;
+        }
+
+        while (t != NULL) {
+            // printf("Freeing texture: %d\n", t->texture_id);
+            unload_texture(&t->texture);
+            tp = t;
+            t = t->parent;
+            free(tp);
+        }
+    }
+
+    /*
     int i;
     cachedtexture_t* t = tm->textures;
 
@@ -110,4 +201,5 @@ void destroy_manager(texturemanager_t* tm)
     }
 
     free(tm->textures);
+    */
 }
