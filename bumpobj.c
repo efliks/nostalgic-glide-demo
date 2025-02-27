@@ -122,15 +122,14 @@ int create_face_from_template(facedata_t* face, const facetempl_t* templ, vertex
     face->v2 = &vertices[templ->v2];
     face->v3 = &vertices[templ->v3];
 
-    // Assume all textures are 128x128
-    face->mapper.s1 = templ->mapper.s1 << 7;
-    face->mapper.t1 = templ->mapper.t1 << 7;
+    face->mapper.s1 = templ->mapper.s1;
+    face->mapper.t1 = templ->mapper.t1;
 
-    face->mapper.s2 = templ->mapper.s2 << 7;
-    face->mapper.t2 = templ->mapper.t2 << 7;
+    face->mapper.s2 = templ->mapper.s2;
+    face->mapper.t2 = templ->mapper.t2;
 
-    face->mapper.s3 = templ->mapper.s3 << 7;
-    face->mapper.t3 = templ->mapper.t3 << 7;
+    face->mapper.s3 = templ->mapper.s3;
+    face->mapper.t3 = templ->mapper.t3;
 
     face->mapper.texture = get_texture(texturefiles[templ->mapper.texture_idx], tm);
     is_good = (face->mapper.texture != NULL) ? 1 : 0;

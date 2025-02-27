@@ -168,14 +168,14 @@ int initialize_cube(object3d_t* cubeobj, texturemanager_t* tm)
     int is_success;
 #ifdef GLIDE_BUILD
   const char* texturefiles[20] = {
-      "assets/textures/camino2.3df", "assets/textures/floor_g.3df",
-      "assets/textures/metal.3df",   "assets/textures/trak_g.3df",
-      "assets/textures/univ42.3df",  "assets/textures/univ43.3df"};
-#else
-  const char* texturefiles[20] = {
       "assets/textures/camino2.pcx", "assets/textures/floor_g.pcx",
       "assets/textures/metal.pcx",   "assets/textures/trak_g.pcx",
       "assets/textures/univ42.pcx",  "assets/textures/univ43.pcx"};
+#else
+  const char* texturefiles[20] = {
+      "assets/textures/s_camino.pcx", "assets/textures/s_floorg.pcx",
+      "assets/textures/s_metal.pcx",   "assets/textures/s_trakg.pcx",
+      "assets/textures/s_univ2.pcx",  "assets/textures/s_univ3.pcx"};
 #endif
     is_success = create_cube(cubeobj, texturefiles, 6, tm);
     if (is_success) {

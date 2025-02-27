@@ -30,12 +30,8 @@ And the Glide library:
 
     Glide/Lib/DOS/Stack/glide2x.lib -> glide/lib
 
-Copy the TexUS utility program that is needed for converting textures into 
-3Dfx's 3DF format:
-
-    Glide/Bin/DOS/texus.exe -> assets/textures
-
-Finally, download and unpack the texture pack in the assets/textures directory.
+Finally, download and unpack the texture pack in the assets/textures directory, 
+and run process.sh to generate textures.
 
 The choice of the glide2x.ovl driver depends on the type of the Voodoo board
 that you have. A driver for Voodoo will not work with a Voodoo 2 board, and 
@@ -60,18 +56,6 @@ In order to compile any of the targets, simply use, for example:
 ATTENTION! For the Glide target, run prepare.bat first, then run wmake. This 
 is a workaround for the fact that there are too many command line options for 
 the wcc386 compiler.
-
-### Textures
-
-The two rasterizers read textures in different formats. These are legacy PCX 
-used by the software rasterizer, and 3DF used by the Glide rasterizer. To 
-process the textures, use the included scripts process.sh and texus.bat. The 
-texus.bat script should be run on the target MS-DOS system where texus.exe
-is installed.
-
-Some objects in the demo use the Phong illumination model. A Phong lightmap is 
-nothing but a special texture. This texture is included in the repository in 
-assets/envmaps, and comes from one of my [old projects](https://github.com/efliks/doseffects).
 
 ## Execute
 

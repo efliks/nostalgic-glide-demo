@@ -171,27 +171,46 @@ void select_texture(glidetexture_t* gt, drawcontext_t* dc)
 
 void configure_envmapped_triangle(GrVertex* v1, GrVertex* v2, GrVertex* v3, facedata_t* f)
 {
-    v1->tmuvtx[0].sow = (f->v1->rotated_normal.z * 127 + 127) * f->v1->oow;
-    v1->tmuvtx[0].tow = (f->v1->rotated_normal.y * 127 + 127) * f->v1->oow;
+    float ts;
 
-    v2->tmuvtx[0].sow = (f->v2->rotated_normal.z * 127 + 127) * f->v2->oow;
-    v2->tmuvtx[0].tow = (f->v2->rotated_normal.y * 127 + 127) * f->v2->oow;
+    //TODO Optimize
+    if (f->mapper.texture->glidetexture.info.smallLod == GR_LOD_256) {
+        ts = 256 / 2 - 1;
+    }
+    else {
+        ts = 128 / 2 - 1;
+    }
 
-    v3->tmuvtx[0].sow = (f->v3->rotated_normal.z * 127 + 127) * f->v3->oow;
-    v3->tmuvtx[0].tow = (f->v3->rotated_normal.y * 127 + 127) * f->v3->oow;
+    v1->tmuvtx[0].sow = (f->v1->rotated_normal.z * ts + ts) * f->v1->oow;
+    v1->tmuvtx[0].tow = (f->v1->rotated_normal.y * ts + ts) * f->v1->oow;
+
+    v2->tmuvtx[0].sow = (f->v2->rotated_normal.z * ts + ts) * f->v2->oow;
+    v2->tmuvtx[0].tow = (f->v2->rotated_normal.y * ts + ts) * f->v2->oow;
+
+    v3->tmuvtx[0].sow = (f->v3->rotated_normal.z * ts + ts) * f->v3->oow;
+    v3->tmuvtx[0].tow = (f->v3->rotated_normal.y * ts + ts) * f->v3->oow;
 }
 
 void configure_textured_triangle(GrVertex* v1, GrVertex* v2, GrVertex* v3, facedata_t* f)
 {
+    float ts;
+    //TODO Optimize
+    if (f->mapper.texture->glidetexture.info.smallLod == GR_LOD_256) {
+        ts = 255;
+    }
+    else {
+        ts = 127;
+    }
+
     //FIXME
-    v1->tmuvtx[0].sow = (float)(f->mapper.s1 >> 7) * 255 * f->v1->oow;
-    v1->tmuvtx[0].tow = (float)(f->mapper.t1 >> 7) * 255 * f->v1->oow;
+    v1->tmuvtx[0].sow = (float)(f->mapper.s1) * ts * f->v1->oow;
+    v1->tmuvtx[0].tow = (float)(f->mapper.t1) * ts * f->v1->oow;
 
-    v2->tmuvtx[0].sow = (float)(f->mapper.s2 >> 7) * 255 * f->v2->oow;
-    v2->tmuvtx[0].tow = (float)(f->mapper.t2 >> 7) * 255 * f->v2->oow;
+    v2->tmuvtx[0].sow = (float)(f->mapper.s2) * ts * f->v2->oow;
+    v2->tmuvtx[0].tow = (float)(f->mapper.t2) * ts * f->v2->oow;
 
-    v3->tmuvtx[0].sow = (float)(f->mapper.s3 >> 7) * 255 * f->v3->oow;
-    v3->tmuvtx[0].tow = (float)(f->mapper.t3 >> 7) * 255 * f->v3->oow;
+    v3->tmuvtx[0].sow = (float)(f->mapper.s3) * ts * f->v3->oow;
+    v3->tmuvtx[0].tow = (float)(f->mapper.t3) * ts * f->v3->oow;
 }
 
 void configure_gouraud_triangle(GrVertex* v1, GrVertex* v2, GrVertex* v3, facedata_t* f, vector3d_t* light)

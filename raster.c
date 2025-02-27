@@ -70,16 +70,19 @@ static unsigned char compute_intensity(vector3d_t* normal, vector3d_t* light)
 void draw_envmapped_triangle(int x1, int y1, int x2, int y2, int x3, int y3, facedata_t* f, drawcontext_t* dc)
 {
     int tx1, ty1, tx2, ty2, tx3, ty3;
+    float ts;
+
+    ts = (float)(f->mapper.texture->bitmap.width) * 0.5 - 1;
 
     // Why this works?
-    tx1 = (int)(f->v1->rotated_normal.z * 63 + 63);
-    ty1 = (int)(f->v1->rotated_normal.y * 63 + 63);
+    tx1 = (int)(f->v1->rotated_normal.z * ts + ts);
+    ty1 = (int)(f->v1->rotated_normal.y * ts + ts);
 
-    tx2 = (int)(f->v2->rotated_normal.z * 63 + 63);
-    ty2 = (int)(f->v2->rotated_normal.y * 63 + 63);
+    tx2 = (int)(f->v2->rotated_normal.z * ts + ts);
+    ty2 = (int)(f->v2->rotated_normal.y * ts + ts);
 
-    tx3 = (int)(f->v3->rotated_normal.z * 63 + 63);
-    ty3 = (int)(f->v3->rotated_normal.y * 63 + 63);
+    tx3 = (int)(f->v3->rotated_normal.z * ts + ts);
+    ty3 = (int)(f->v3->rotated_normal.y * ts + ts);
 
     textured_triangle(x1, y1, x2, y2, x3, y3, tx1, ty1, tx2, ty2, tx3, ty3, f->mapper.texture->bitmap.data, dc->soft.framebuffer);
 }
@@ -93,6 +96,23 @@ void draw_gouraud_triangle(int x1, int y1, int x2, int y2, int x3, int y3, faced
     colc = compute_intensity(&f->v3->rotated_normal, lightvector);
     
     gouraud_triangle(x1, y1, x2, y2, x3, y3, cola, colb, colc, dc->soft.framebuffer);
+}
+
+void draw_textured_triangle(int x1, int y1, int x2, int y2, int x3, int y3, facedata_t* f, drawcontext_t* dc)
+{
+    int tx1, ty1, tx2, ty2, tx3, ty3, ts, tt;
+
+    //TODO Optimize
+    ts = f->mapper.texture->bitmap.width;
+    tt = f->mapper.texture->bitmap.height;
+    tx1 = f->mapper.s1 * ts;
+    ty1 = f->mapper.t1 * tt;
+    tx2 = f->mapper.s2 * ts;
+    ty2 = f->mapper.t2 * tt;
+    tx3 = f->mapper.s3 * ts;
+    ty3 = f->mapper.t3 * tt;
+
+    textured_triangle(x1, y1, x2, y2, x3, y3, tx1, ty1, tx2, ty2, tx3, ty3, f->mapper.texture->bitmap.data, dc->soft.framebuffer);
 }
 
 void draw_object3d(object3d_t* obj, vector3d_t* lightvector, drawcontext_t* dc)
@@ -122,7 +142,7 @@ void draw_object3d(object3d_t* obj, vector3d_t* lightvector, drawcontext_t* dc)
 
         switch (dc->drawmode) {
         case MODE_TEXTURE:
-            textured_triangle(x1, y1, x2, y2, x3, y3, f->mapper.s1, f->mapper.t1, f->mapper.s2, f->mapper.t2, f->mapper.s3, f->mapper.t3, f->mapper.texture->bitmap.data, dc->soft.framebuffer);
+            draw_textured_triangle(x1, y1, x2, y2, x3, y3, f, dc);
             break;
         case MODE_ENVMAP:
             draw_envmapped_triangle(x1, y1, x2, y2, x3, y3, f, dc);
