@@ -3,6 +3,45 @@
 
 #define SHIFT_CONST 6
 
+static void swap_vertex(vertex_t* v1, vertex_t* v2)
+{
+    int swap;
+    unsigned char swapc;
+
+    swap = v1->x;
+    v1->x = v2->x;
+    v2->x = swap;
+
+    swap = v1->y;
+    v1->y = v2->y;
+    v2->y = swap;
+
+    swap = v1->tx;
+    v1->tx = v2->tx;
+    v2->tx = swap;
+
+    swap = v1->ty;
+    v1->ty = v2->ty;
+    v2->ty = swap;
+
+    swapc = v1->c;
+    v1->c = v2->c;
+    v2->c = swap;
+}
+
+static void reorder_vertices(vertex_t* v1, vertex_t* v2, vertex_t* v3)
+{
+    if (v1->y > v2->y) {
+        swap_vertex(v1, v2);
+    }
+    if (v2->y > v3->y) {
+        swap_vertex(v2, v3);
+    }
+    if (v1->y > v2->y) {
+        swap_vertex(v1, v2);
+    }
+}
+
 static void flat_line(int x1, int x2, int y, unsigned char color,
     unsigned char* buffer)
 {
@@ -29,68 +68,50 @@ static void flat_line(int x1, int x2, int y, unsigned char color,
     }
 }
 
-void flat_triangle(int x1, int y1, int x2, int y2, int x3, int y3,
-    unsigned char color, unsigned char* buffer)
+void flat_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, unsigned char color, unsigned char* buffer)
 {
     long dx12, dx13, dx23, scan_x1, scan_x2;
-    int i;
+    int y, dy;
 
-    if (y1 > y2) {
-        i = y1;
-        y1 = y2;
-        y2 = i;
+    reorder_vertices(v1, v2, v3);
 
-        i = x1;
-        x1 = x2;
-        x2 = i;
+    dy = v2->y - v1->y;
+    if (dy != 0) {
+        dx12 = ((v2->x - v1->x) << SHIFT_CONST) / dy;
     }
-    if (y2 > y3) {
-        i = y2;
-        y2 = y3;
-        y3 = i;
-
-        i = x2;
-        x2 = x3;
-        x3 = i;
-    }
-    if (y1 > y2) {
-        i = y1;
-        y1 = y2;
-        y2 = i;
-
-        i = x1;
-        x1 = x2;
-        x2 = i;
-    }
-
-    if ((i = y2 - y1) != 0)
-        dx12 = ((x2 - x1) << SHIFT_CONST) / i;
-    else
+    else {
         dx12 = 0;
+    }
 
-    if ((i = y3 - y1) != 0)
-        dx13 = ((x3 - x1) << SHIFT_CONST) / i;
-    else
+    dy = v3->y - v1->y;
+    if (dy != 0) {
+        dx13 = ((v3->x - v1->x) << SHIFT_CONST) / dy;
+    }
+    else {
         dx13 = 0;
+    }
 
-    if ((i = y3 - y2) != 0)
-        dx23 = ((x3 - x2) << SHIFT_CONST) / i;
-    else
+    dy = v3->y - v2->y;
+    if (dy != 0) {
+        dx23 = ((v3->x - v2->x) << SHIFT_CONST) / dy;
+    }
+    else {
         dx23 = 0;
+    }
 
-    scan_x1 = scan_x2 = x1 << SHIFT_CONST;
-    for (i = y1; i < y2; i++) {
-        flat_line(scan_x1 >> SHIFT_CONST,
-            scan_x2 >> SHIFT_CONST, i, color, buffer);
+    scan_x1 = scan_x2 = v1->x << SHIFT_CONST;
+    for (y = v1->y; y < v2->y; y++) {
+        flat_line(scan_x1 >> SHIFT_CONST, 
+            scan_x2 >> SHIFT_CONST, y, color, buffer);
 
         scan_x1 += dx13;
         scan_x2 += dx12;
     }
 
-    scan_x2 = x2 << SHIFT_CONST;
-    for (i = y2; i < y3; i++) {
-        flat_line(scan_x1 >> SHIFT_CONST,
-            scan_x2 >> SHIFT_CONST, i, color, buffer);
+    scan_x2 = v2->x << SHIFT_CONST;
+    for (y = v2->y; y < v3->y; y++) {
+        flat_line(scan_x1 >> SHIFT_CONST, 
+            scan_x2 >> SHIFT_CONST, y, color, buffer);
 
         scan_x1 += dx13;
         scan_x2 += dx23;
@@ -144,83 +165,49 @@ static void gouraud_line(int x1, int x2, int y, unsigned char c1, unsigned char 
     }
 }
 
-void gouraud_triangle(int x1, int y1, int x2, int y2, int x3, int y3,
-    unsigned char c1, unsigned char c2, unsigned char c3,
-    unsigned char* buffer)
+void gouraud_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, unsigned char* buffer)
 {
     long dx12, dx13, dx23, scan_x1, scan_x2;
     long dc12, dc13, dc23, scan_c1, scan_c2;
-    int i;
+    int y, dy;
 
-    if (y1 > y2) {
-        i = y1;
-        y1 = y2;
-        y2 = i;
+    reorder_vertices(v1, v2, v3);
 
-        i = x1;
-        x1 = x2;
-        x2 = i;
-
-        i = c1;
-        c1 = c2;
-        c2 = i;
+    dy = v2->y - v1->y;
+    if (dy != 0) {
+        dx12 = ((v2->x - v1->x) << SHIFT_CONST) / dy;
+        dc12 = ((v2->c - v1->c) << SHIFT_CONST) / dy;
     }
-    if (y2 > y3) {
-        i = y2;
-        y2 = y3;
-        y3 = i;
-
-        i = x2;
-        x2 = x3;
-        x3 = i;
-
-        i = c2;
-        c2 = c3;
-        c3 = i;
-    }
-    if (y1 > y2) {
-        i = y1;
-        y1 = y2;
-        y2 = i;
-
-        i = x1;
-        x1 = x2;
-        x2 = i;
-
-        i = c1;
-        c1 = c2;
-        c2 = i;
-    }
-
-    if ((i = y2 - y1) != 0) {
-        dx12 = ((x2 - x1) << SHIFT_CONST) / i;
-        dc12 = ((c2 - c1) << SHIFT_CONST) / i;
-    } else {
+    else {
         dx12 = 0;
         dc12 = 0;
     }
 
-    if ((i = y3 - y1) != 0) {
-        dx13 = ((x3 - x1) << SHIFT_CONST) / i;
-        dc13 = ((c3 - c1) << SHIFT_CONST) / i;
-    } else {
+    dy = v3->y - v1->y;
+    if (dy != 0) {
+        dx13 = ((v3->x - v1->x) << SHIFT_CONST) / dy;
+        dc13 = ((v3->c - v1->c) << SHIFT_CONST) / dy;
+    }
+    else {
         dx13 = 0;
         dc13 = 0;
     }
 
-    if ((i = y3 - y2) != 0) {
-        dx23 = ((x3 - x2) << SHIFT_CONST) / i;
-        dc23 = ((c3 - c2) << SHIFT_CONST) / i;
-    } else {
+    dy = v3->y - v2->y;
+    if (dy != 0) {
+        dx23 = ((v3->x - v2->x) << SHIFT_CONST) / dy;
+        dc23 = ((v3->c - v2->c) << SHIFT_CONST) / dy;
+    }
+    else {
         dx23 = 0;
         dc23 = 0;
     }
 
-    scan_x1 = scan_x2 = x1 << SHIFT_CONST;
-    scan_c1 = scan_c2 = c1 << SHIFT_CONST;
+    scan_x1 = scan_x2 = v1->x << SHIFT_CONST;
+    scan_c1 = scan_c2 = v1->c << SHIFT_CONST;
 
-    for (i = y1; i < y2; i++) {
-        gouraud_line(scan_x1 >> SHIFT_CONST, scan_x2 >> SHIFT_CONST, i,
+    for (y = v1->y; y < v2->y; y++) {
+        gouraud_line(scan_x1 >> SHIFT_CONST, scan_x2 >> SHIFT_CONST, y,
             scan_c1 >> SHIFT_CONST, scan_c2 >> SHIFT_CONST, buffer);
 
         scan_x1 += dx13;
@@ -229,11 +216,10 @@ void gouraud_triangle(int x1, int y1, int x2, int y2, int x3, int y3,
         scan_c2 += dc12;
     }
 
-    scan_x2 = x2 << SHIFT_CONST;
-    scan_c2 = c2 << SHIFT_CONST;
-
-    for (i = y2; i < y3; i++) {
-        gouraud_line(scan_x1 >> SHIFT_CONST, scan_x2 >> SHIFT_CONST, i,
+    scan_x2 = v2->x << SHIFT_CONST;
+    scan_c2 = v2->c << SHIFT_CONST;
+    for (y = v2->y; y < v3->y; y++) {
+        gouraud_line(scan_x1 >> SHIFT_CONST, scan_x2 >> SHIFT_CONST, y,
             scan_c1 >> SHIFT_CONST, scan_c2 >> SHIFT_CONST, buffer);
 
         scan_x1 += dx13;
@@ -298,102 +284,56 @@ static void textured_line(int x1, int x2, int y,
     }
 }
 
-void textured_triangle(int x1, int y1, int x2, int y2, int x3, int y3,
-    int tx1, int ty1, int tx2, int ty2, int tx3, int ty3,
-    unsigned char* texture, unsigned char* buffer)
+void textured_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, unsigned char* texture, unsigned char* buffer)
 {
     long dx12, dx13, dx23, curr_x1, curr_x2;
     long tdx12, tdy12, tdx13, tdy13, tdx23, tdy23, scan_x1, scan_y1, scan_x2, scan_y2;
-    int i;
+    int y, dy;
 
-    if (y1 > y2) {
-        i = y1;
-        y1 = y2;
-        y2 = i;
+    reorder_vertices(v1, v2, v3);
 
-        i = x1;
-        x1 = x2;
-        x2 = i;
-
-        i = ty1;
-        ty1 = ty2;
-        ty2 = i;
-
-        i = tx1;
-        tx1 = tx2;
-        tx2 = i;
+    dy = v2->y - v1->y;
+    if (dy != 0) {
+        dx12 = ((v2->x - v1->x) << SHIFT_CONST) / dy;
+        tdx12 = ((v2->tx - v1->tx) << SHIFT_CONST) / dy;
+        tdy12 = ((v2->ty - v1->ty) << SHIFT_CONST) / dy;
     }
-    if (y2 > y3) {
-        i = y2;
-        y2 = y3;
-        y3 = i;
-
-        i = x2;
-        x2 = x3;
-        x3 = i;
-
-        i = ty2;
-        ty2 = ty3;
-        ty3 = i;
-
-        i = tx2;
-        tx2 = tx3;
-        tx3 = i;
-    }
-    if (y1 > y2) {
-        i = y1;
-        y1 = y2;
-        y2 = i;
-
-        i = x1;
-        x1 = x2;
-        x2 = i;
-
-        i = ty1;
-        ty1 = ty2;
-        ty2 = i;
-
-        i = tx1;
-        tx1 = tx2;
-        tx2 = i;
-    }
-
-    if ((i = y2 - y1) != 0) {
-        dx12 = ((x2 - x1) << SHIFT_CONST) / i;
-        tdx12 = ((tx2 - tx1) << SHIFT_CONST) / i;
-        tdy12 = ((ty2 - ty1) << SHIFT_CONST) / i;
-    } else {
+    else {
         dx12 = 0;
         tdx12 = 0;
         tdy12 = 0;
     }
 
-    if ((i = y3 - y1) != 0) {
-        dx13 = ((x3 - x1) << SHIFT_CONST) / i;
-        tdx13 = ((tx3 - tx1) << SHIFT_CONST) / i;
-        tdy13 = ((ty3 - ty1) << SHIFT_CONST) / i;
-    } else {
+    dy = v3->y - v1->y;
+    if (dy != 0) {
+        dx13 = ((v3->x - v1->x) << SHIFT_CONST) / dy;
+        tdx13 = ((v3->tx - v1->tx) << SHIFT_CONST) / dy;
+        tdy13 = ((v3->ty - v1->ty) << SHIFT_CONST) / dy;
+    }
+    else {
         dx13 = 0;
         tdx13 = 0;
         tdy13 = 0;
     }
 
-    if ((i = y3 - y2) != 0) {
-        dx23 = ((x3 - x2) << SHIFT_CONST) / i;
-        tdx23 = ((tx3 - tx2) << SHIFT_CONST) / i;
-        tdy23 = ((ty3 - ty2) << SHIFT_CONST) / i;
-    } else {
+    dy = v3->y - v2->y;
+    if (dy != 0) {
+        dx23 = ((v3->x - v2->x) << SHIFT_CONST) / dy;
+        tdx23 = ((v3->tx - v2->tx) << SHIFT_CONST) / dy;
+        tdy23 = ((v3->ty - v2->ty) << SHIFT_CONST) / dy;
+    }
+    else {
         dx23 = 0;
         tdx23 = 0;
         tdy23 = 0;
     }
 
-    curr_x1 = curr_x2 = x1 << SHIFT_CONST;
-    scan_x1 = scan_x2 = tx1 << SHIFT_CONST;
-    scan_y1 = scan_y2 = ty1 << SHIFT_CONST;
+    curr_x1 = curr_x2 = v1->x << SHIFT_CONST;
+    scan_x1 = scan_x2 = v1->tx << SHIFT_CONST;
+    scan_y1 = scan_y2 = v1->ty << SHIFT_CONST;
 
-    for (i = y1; i < y2; i++) {
-        textured_line(curr_x1 >> SHIFT_CONST, curr_x2 >> SHIFT_CONST, i,
+    for (y = v1->y; y < v2->y; y++) {
+        textured_line(curr_x1 >> SHIFT_CONST, curr_x2 >> SHIFT_CONST, y,
             scan_x1 >> SHIFT_CONST, scan_y1 >> SHIFT_CONST,
             scan_x2 >> SHIFT_CONST, scan_y2 >> SHIFT_CONST, texture, buffer);
 
@@ -406,12 +346,12 @@ void textured_triangle(int x1, int y1, int x2, int y2, int x3, int y3,
         scan_y2 += tdy12;
     }
 
-    curr_x2 = x2 << SHIFT_CONST;
-    scan_x2 = tx2 << SHIFT_CONST;
-    scan_y2 = ty2 << SHIFT_CONST;
+    curr_x2 = v2->x << SHIFT_CONST;
+    scan_x2 = v2->tx << SHIFT_CONST;
+    scan_y2 = v2->ty << SHIFT_CONST;
 
-    for (i = y2; i < y3; i++) {
-        textured_line(curr_x1 >> SHIFT_CONST, curr_x2 >> SHIFT_CONST, i,
+    for (y = v2->y; y < v3->y; y++) {
+        textured_line(curr_x1 >> SHIFT_CONST, curr_x2 >> SHIFT_CONST, y,
             scan_x1 >> SHIFT_CONST, scan_y1 >> SHIFT_CONST,
             scan_x2 >> SHIFT_CONST, scan_y2 >> SHIFT_CONST, texture, buffer);
 

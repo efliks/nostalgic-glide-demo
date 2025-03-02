@@ -1,12 +1,15 @@
 #ifndef _BUMPTRI_H
 #define _BUMPTRI_H
 
-void flat_triangle(int x1, int y1, int x2, int y2, int x3, int y3, unsigned char color, unsigned char* buffer);
+typedef struct
+{
+    int x, y;
+    int tx, ty;
+    unsigned char c;
+} vertex_t;
 
-void gouraud_triangle(int x1, int y1, int x2, int y2, int x3, int y3, unsigned char c1, unsigned char c2, unsigned char c3, unsigned char* buffer);
-
-void textured_triangle(int x1, int y1, int x2, int y2, int x3, int y3, int tx1, int ty1, int tx2, int ty2, int tx3, int ty3, unsigned char* texture, unsigned char* buffer);
-
-//void bumpmapped_triangle(tri_struct* tri, tri_struct* bump_tri, tri_struct* env_tri, unsigned char* bumpmap, unsigned char* envmap, unsigned char* buffer);
+void flat_triangle(vertex_t *, vertex_t *, vertex_t *, unsigned char, unsigned char *);
+void gouraud_triangle(vertex_t *, vertex_t *, vertex_t *, unsigned char *);
+void textured_triangle(vertex_t *, vertex_t *, vertex_t *, unsigned char *, unsigned char *);
 
 #endif  // _BUMPTRI_H
