@@ -231,7 +231,7 @@ void gouraud_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, unsigned char* b
 
 static void textured_line(int x1, int x2, int y,
     int tx1, int ty1, int tx2, int ty2,
-    unsigned char* texture, unsigned char* buffer)
+    int shifty, unsigned char* texture, unsigned char* buffer)
 {
     long delta_x, delta_y, curr_x, curr_y;
     int i, lenght;
@@ -276,7 +276,7 @@ static void textured_line(int x1, int x2, int y,
     ofs += ((y << 6) + (y << 8) + x1);
 
     for (i = x1; i < x2; i++) {
-        *ofs = texture[(curr_x >> SHIFT_CONST) + ((curr_y >> SHIFT_CONST) << 7)];
+        *ofs = texture[(curr_x >> SHIFT_CONST) + ((curr_y >> SHIFT_CONST) << shifty)];
         ofs++;
 
         curr_x += delta_x;
@@ -284,7 +284,7 @@ static void textured_line(int x1, int x2, int y,
     }
 }
 
-void textured_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, unsigned char* texture, unsigned char* buffer)
+void textured_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, int shifty, unsigned char* texture, unsigned char* buffer)
 {
     long dx12, dx13, dx23, curr_x1, curr_x2;
     long tdx12, tdy12, tdx13, tdy13, tdx23, tdy23, scan_x1, scan_y1, scan_x2, scan_y2;
@@ -335,7 +335,7 @@ void textured_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, unsigned char* 
     for (y = v1->y; y < v2->y; y++) {
         textured_line(curr_x1 >> SHIFT_CONST, curr_x2 >> SHIFT_CONST, y,
             scan_x1 >> SHIFT_CONST, scan_y1 >> SHIFT_CONST,
-            scan_x2 >> SHIFT_CONST, scan_y2 >> SHIFT_CONST, texture, buffer);
+            scan_x2 >> SHIFT_CONST, scan_y2 >> SHIFT_CONST, shifty, texture, buffer);
 
         curr_x1 += dx13;
         curr_x2 += dx12;
@@ -353,7 +353,7 @@ void textured_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, unsigned char* 
     for (y = v2->y; y < v3->y; y++) {
         textured_line(curr_x1 >> SHIFT_CONST, curr_x2 >> SHIFT_CONST, y,
             scan_x1 >> SHIFT_CONST, scan_y1 >> SHIFT_CONST,
-            scan_x2 >> SHIFT_CONST, scan_y2 >> SHIFT_CONST, texture, buffer);
+            scan_x2 >> SHIFT_CONST, scan_y2 >> SHIFT_CONST, shifty, texture, buffer);
 
         curr_x1 += dx13;
         curr_x2 += dx23;

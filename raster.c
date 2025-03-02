@@ -69,8 +69,16 @@ static unsigned char compute_intensity(vector3d_t* normal, vector3d_t* light)
 
 static void draw_envmapped_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, facedata_t* f, drawcontext_t* dc)
 {
+    int tsi, shifty;
     float ts;
 
+    tsi = f->mapper.texture->bitmap.width;
+    if (tsi == 128) {
+        shifty = 7;
+    }
+    else { // (ts == 256)
+        shifty = 8;
+    }
     ts = (float)(f->mapper.texture->bitmap.width) * 0.5 - 1;
 
     // Why this works?
@@ -83,7 +91,7 @@ static void draw_envmapped_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, fa
     v3->tx = (int)(f->v3->rotated_normal.z * ts + ts);
     v3->ty = (int)(f->v3->rotated_normal.y * ts + ts);
 
-    textured_triangle(v1, v2, v3, f->mapper.texture->bitmap.data, dc->soft.framebuffer);
+    textured_triangle(v1, v2, v3, shifty, f->mapper.texture->bitmap.data, dc->soft.framebuffer);
 }
 
 static void draw_gouraud_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, facedata_t* f, vector3d_t* lightvector, drawcontext_t* dc)
@@ -97,7 +105,7 @@ static void draw_gouraud_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, face
 
 static void draw_textured_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, facedata_t* f, drawcontext_t* dc)
 {
-    int ts, tt;
+    int ts, tt, shifty;
 
     //TODO Optimize
     ts = f->mapper.texture->bitmap.width;
@@ -109,7 +117,14 @@ static void draw_textured_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, fac
     v3->tx = f->mapper.s3 * ts;
     v3->ty = f->mapper.t3 * tt;
 
-    textured_triangle(v1, v2, v3, f->mapper.texture->bitmap.data, dc->soft.framebuffer);
+    if (ts == 128) {
+        shifty = 7;
+    }
+    else { // (ts == 256)
+        shifty = 8;
+    }
+
+    textured_triangle(v1, v2, v3, shifty, f->mapper.texture->bitmap.data, dc->soft.framebuffer);
 }
 
 void draw_object3d(object3d_t* obj, vector3d_t* lightvector, drawcontext_t* dc)
