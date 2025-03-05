@@ -132,46 +132,52 @@ static void quantize_to_rgb565(unsigned char* src, palette_color_t* palette, int
     }
 }
 
+static int convert_bitmap(bitmap_t* tb, glidetexture_t* gt)
+{
+    GrLOD_t level;
+    int is_success = 0;
+
+    switch (tb->width) {
+    case 128:
+        level = GR_LOD_128;
+        break;
+    case 256:
+        level = GR_LOD_256;
+        break;
+    default:
+        level = (GrLOD_t)-1;
+        break;
+    }
+
+    if (level != (GrLOD_t)-1) {
+        gt->info.data = malloc(tb->width * tb->height * sizeof(unsigned short));
+        if (gt->info.data != NULL) {
+            gt->info.smallLod = level;
+            gt->info.largeLod = level;
+            gt->info.aspectRatio = GR_ASPECT_1x1;
+            //TODO Support other color formats
+            gt->info.format = GR_TEXFMT_RGB_565;
+            quantize_to_rgb565(tb->data, (palette_color_t *)tb->palette, tb->width * tb->height, (unsigned short *)gt->info.data);
+        
+            gt->tabletype = -1;
+            gt->is_in_tmu = 0;
+            gt->tmu_memory_addr = -1;
+        
+            is_success = 1;
+        }
+    }
+
+    return is_success;
+}
+
 static int load_bitmap_texture(glidetexture_t* gt, const char* filename)
 {
     bitmap_t tb;
-    GrLOD_t level;
-    int is_success;
+    int is_success = 0;
 
-    is_success = load_bitmap(&tb, filename);
-
-    if (is_success) {
-        is_success = (tb.width == tb.height && 
-            (tb.width == 128 || 
-            tb.width == 256)) ? 1 : 0;
-
-        if (is_success) {
-            gt->info.data = malloc(tb.width * tb.height * sizeof(unsigned short));
-            is_success = (gt->info.data != NULL) ? 1 : 0;
-
-            if (is_success) {
-                switch (tb.width) {
-                case 128:
-                    level = GR_LOD_128;
-                    break;
-                case 256:
-                    level = GR_LOD_256;
-                    break;
-                default:
-                    break;
-                }
-                gt->info.smallLod = level;
-                gt->info.largeLod = level;
-                gt->info.aspectRatio = GR_ASPECT_1x1;
-
-                //TODO Support other color formats
-                gt->info.format = GR_TEXFMT_RGB_565;
-                quantize_to_rgb565(tb.data, (palette_color_t *)tb.palette, tb.width * tb.height, (unsigned short *)gt->info.data);
-
-                gt->tabletype = -1;
-                gt->is_in_tmu = 0;
-                gt->tmu_memory_addr = -1;
-            }
+    if (load_bitmap(&tb, filename)) {
+        if (convert_bitmap(&tb, gt)) {
+            is_success = 1;
         }
 
         unload_bitmap(&tb);
