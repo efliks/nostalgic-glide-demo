@@ -3,6 +3,26 @@
 
 #include "texture.h"
 
+typedef enum 
+{
+    LOAD_FILE,
+    COMPUTE_ENVMAP
+} configtype_t;
+
+typedef struct
+{
+    const char* filename;
+} config_file_t;
+
+typedef struct
+{
+    union {
+        config_file_t file;
+    };
+
+    configtype_t type;
+} textureconfig_t;
+
 typedef struct cachedtexture_s
 {
     unsigned long texture_id;
@@ -12,11 +32,10 @@ typedef struct cachedtexture_s
 
 typedef struct
 {
-    int numtextures, _numallocated;
     cachedtexture_t* root;
 } texturemanager_t;
 
-texture_t* get_texture(const char *, texturemanager_t *);
+texture_t* get_texture(const textureconfig_t *, texturemanager_t *);
 
 int create_manager(texturemanager_t *);
 void destroy_manager(texturemanager_t *);
