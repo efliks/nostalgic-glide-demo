@@ -11,31 +11,6 @@ typedef struct
     texture_t* texture;
 } texcoord_t, mapper_t;
 
-/*
-typedef struct
-{
-    int v1, v2, v3;
-} face_t;
-
-typedef struct
-{
-    face_t* faces;
-    point3d_t *points, *rotated_points;
-    point2d_t* translated_points;
-    texcoord_t* texcoords;
-    texture_t* textures;
-    vector3d_t *point_normals, *face_normals;
-
-    float* facedepths;
-    int* faceorder;
-
-    int n_points, n_faces, n_textures;
-
-    float x0, y0, z0;
-    unsigned int ax, ay, az, adx, ady, adz;
-} object3d_t;
-*/
-
 typedef struct
 {
     point3d_t point;
@@ -66,13 +41,15 @@ typedef struct
     vertexdata_t* vertices;
     facedata_t* faces;
     faceorder_t* faceorder;
-    texture_t* textures;
 
-    int numpoints, numfaces, numtextures, numvisible;
+    int numpoints, numfaces, numvisible;
 
     float x0, y0, z0;
     unsigned int ax, ay, az, adx, ady, adz;
 } object3d_t;
+
+
+// functions
 
 void sort_faces(object3d_t *, vector3d_t *);
 
@@ -81,10 +58,10 @@ void update_object3d(object3d_t *);
 void reset_object3d(object3d_t *);
 void reset_and_scale_object3d(object3d_t *, float);
 
-int create_cube(object3d_t *, const char **, int, texturemanager_t *);
+int create_cube(object3d_t *, const textureconfig_t *, int, texturemanager_t *);
 int load_object3d(object3d_t *, char *);
 int load_off_object(object3d_t *, char *);
-int set_envmap(object3d_t *, char *, texturemanager_t *);
+int set_envmap(object3d_t *, const textureconfig_t *, texturemanager_t *);
 void unload_object3d(object3d_t *);
 
 void save_txt_object3d(object3d_t *, char *);

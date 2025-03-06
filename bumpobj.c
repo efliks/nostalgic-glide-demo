@@ -25,9 +25,9 @@ void reset_and_scale_object3d(object3d_t *, float);
 void compute_vertex_normals(object3d_t *);
 void compute_face_normals(object3d_t* obj);
 
-int create_face_from_template(facedata_t *, const facetempl_t *, vertexdata_t *, const char **, texturemanager_t *);
+int create_face_from_template(facedata_t *, const facetempl_t *, vertexdata_t *, const textureconfig_t *, texturemanager_t *);
 
-int create_from_template(object3d_t *, const point3d_t *, const facetempl_t *, const char **, int, int, texturemanager_t *);
+int create_from_template(object3d_t *, const point3d_t *, const facetempl_t *, const textureconfig_t *, int, int, texturemanager_t *);
 
 int allocate_object3d(object3d_t* obj);
 
@@ -76,12 +76,12 @@ void unload_object3d(object3d_t *obj)
     }
 }
 
-int create_cube(object3d_t* obj, const char** texturefiles, int numtextures, texturemanager_t* tm)
+int create_cube(object3d_t* obj, const textureconfig_t* configs, int numtextures, texturemanager_t* tm)
 {
-    return create_from_template(obj, cubepoints, cubefaces, texturefiles, 8, 12, tm);
+    return create_from_template(obj, cubepoints, cubefaces, configs, 8, 12, tm);
 }
 
-int create_from_template(object3d_t *obj, const point3d_t* points, const facetempl_t* faces, const char** texturefiles, int numpoints, int numfaces, texturemanager_t* tm)
+int create_from_template(object3d_t *obj, const point3d_t* points, const facetempl_t* faces, const textureconfig_t* configs, int numpoints, int numfaces, texturemanager_t* tm)
 {
     int i, is_success;
 
@@ -95,7 +95,7 @@ int create_from_template(object3d_t *obj, const point3d_t* points, const facetem
         }
 
         for (i = 0; i < obj->numfaces; i++) {
-            is_success = create_face_from_template(&obj->faces[i], &faces[i], obj->vertices, texturefiles, tm);
+            is_success = create_face_from_template(&obj->faces[i], &faces[i], obj->vertices, configs, tm);
             if (!is_success) {
                 break;
             }
@@ -114,7 +114,7 @@ int create_from_template(object3d_t *obj, const point3d_t* points, const facetem
     return is_success;
 }
 
-int create_face_from_template(facedata_t* face, const facetempl_t* templ, vertexdata_t* vertices, const char** texturefiles, texturemanager_t* tm)
+int create_face_from_template(facedata_t* face, const facetempl_t* templ, vertexdata_t* vertices, const textureconfig_t* configs, texturemanager_t* tm)
 {
     int is_good;
 
@@ -131,7 +131,7 @@ int create_face_from_template(facedata_t* face, const facetempl_t* templ, vertex
     face->mapper.s3 = templ->mapper.s3;
     face->mapper.t3 = templ->mapper.t3;
 
-    face->mapper.texture = get_texture(texturefiles[templ->mapper.texture_idx], tm);
+    face->mapper.texture = get_texture(&configs[templ->mapper.texture_idx], tm);
     is_good = (face->mapper.texture != NULL) ? 1 : 0;
 
     return is_good;
@@ -329,12 +329,12 @@ void update_object3d(object3d_t *obj)
     }
 }
 
-int set_envmap(object3d_t* obj, char* envmap_file, texturemanager_t* tm)
+int set_envmap(object3d_t* obj, const textureconfig_t* config, texturemanager_t* tm)
 {
     int i, is_good = 0; 
 
     facedata_t* f = obj->faces;
-    texture_t* envmap = get_texture(envmap_file, tm);
+    texture_t* envmap = get_texture(config, tm);
     if (envmap != NULL) {
         is_good = 1;
         for (i = 0; i < obj->numfaces; i++, f++) {

@@ -167,17 +167,11 @@ int initialize_cube(object3d_t* cubeobj, texturemanager_t* tm)
 {
     int is_success;
 #ifdef GLIDE_BUILD
-  const char* texturefiles[20] = {
-      "assets/textures/camino2.pcx", "assets/textures/floor_g.pcx",
-      "assets/textures/metal.pcx",   "assets/textures/trak_g.pcx",
-      "assets/textures/univ42.pcx",  "assets/textures/univ43.pcx"};
+    const textureconfig_t configs[20] = { { "assets/textures/camino2.pcx", LOAD_FILE }, { "assets/textures/floor_g.pcx", LOAD_FILE }, { "assets/textures/metal.pcx", LOAD_FILE }, { "assets/textures/trak_g.pcx", LOAD_FILE }, { "assets/textures/univ42.pcx", LOAD_FILE }, { "assets/textures/univ43.pcx", LOAD_FILE } };
 #else
-  const char* texturefiles[20] = {
-      "assets/textures/s_camino.pcx", "assets/textures/s_floorg.pcx",
-      "assets/textures/s_metal.pcx",   "assets/textures/s_trakg.pcx",
-      "assets/textures/s_univ2.pcx",  "assets/textures/s_univ3.pcx"};
+    const textureconfig_t configs[20] = { { "assets/textures/s_camino.pcx", LOAD_FILE }, { "assets/textures/s_floorg.pcx", LOAD_FILE }, { "assets/textures/s_metal.pcx", LOAD_FILE }, { "assets/textures/s_trakg.pcx", LOAD_FILE }, { "assets/textures/s_univ2.pcx", LOAD_FILE }, { "assets/textures/s_univ3.pcx", LOAD_FILE } };
 #endif
-    is_success = create_cube(cubeobj, texturefiles, 6, tm);
+    is_success = create_cube(cubeobj, configs, 6, tm);
     if (is_success) {
         reset_and_scale_object3d(cubeobj, 100.f);
         //save_txt_object3d(cubeobj, "cubeobj.txt");
@@ -192,6 +186,11 @@ int initialize_cube(object3d_t* cubeobj, texturemanager_t* tm)
 int initialize_torus(object3d_t* torusobj, texturemanager_t* tm)
 {
     int is_success;
+#ifdef GLIDE_BUILD
+  const textureconfig_t config = {"assets/envmaps/envmap.3df", LOAD_FILE};
+#else
+  const textureconfig_t config = {"assets/envmaps/envmap.pcx", LOAD_FILE};
+#endif
 
     is_success = load_object3d(torusobj, "assets/models/torus.3d");
     if (is_success) {
@@ -201,11 +200,7 @@ int initialize_torus(object3d_t* torusobj, texturemanager_t* tm)
         torusobj->ady = 1;
         torusobj->adz = 2;
 
-#ifdef GLIDE_BUILD
-    is_success = set_envmap(torusobj, "assets/envmaps/envmap.3df", tm);
-#else
-    is_success = set_envmap(torusobj, "assets/envmaps/envmap.pcx", tm);
-#endif
+        is_success = set_envmap(torusobj, &config, tm);
         if (!is_success) {
             unload_object3d(torusobj);
         }

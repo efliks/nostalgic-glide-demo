@@ -20,19 +20,56 @@ static unsigned long compute_fnv1a(const uint8_t* data, size_t size)
     return (unsigned long)h;
 }
 
-static cachedtexture_t* create_node(cachedtexture_t* parent, const char* filename, unsigned long texture_id)
+static unsigned long compute_texture_id(const textureconfig_t* tc)
+{
+    unsigned long texture_id;
+    static unsigned long envmap_id = (unsigned long)-1;
+
+    switch (tc->type) {
+    case LOAD_FILE:
+        texture_id = compute_fnv1a(tc->file.filename, strlen(tc->file.filename));
+        break;
+    case COMPUTE_ENVMAP:
+        texture_id = (--envmap_id);
+        break;
+    default:
+        break;
+    }
+
+    return texture_id;
+}
+
+static int create_texture(texture_t* texture, const textureconfig_t* tc)
+{
+    int is_success = 0;
+
+    switch (tc->type) {
+    case LOAD_FILE:
+        is_success = load_texture(texture, tc->file.filename);
+        break;
+    case COMPUTE_ENVMAP:
+        //TODO
+        break;
+    default:
+        break;
+    }
+
+    return is_success;
+}
+
+static cachedtexture_t* create_node(cachedtexture_t* parent, const textureconfig_t* tc, unsigned long texture_id)
 {
     cachedtexture_t* node;
     texture_t texture;
 
-    if (load_texture(&texture, filename)) {
+    if (create_texture(&texture, tc)) {
         node = (cachedtexture_t *)malloc(sizeof(cachedtexture_t));
         if (node != NULL) {
             memcpy(&node->texture, &texture, sizeof(texture_t));
             node->texture_id = texture_id;
             node->parent = parent;
             node->child = NULL;
-            // printf("Load texture: %d\n", node->texture_id);
+            // printf("Create texture: %d\n", node->texture_id);
             return node;
         }
 
@@ -42,17 +79,17 @@ static cachedtexture_t* create_node(cachedtexture_t* parent, const char* filenam
     return NULL;
 }
 
-texture_t* get_texture(const char* filename, texturemanager_t* tm)
+texture_t* get_texture(const textureconfig_t* config, texturemanager_t* tm)
 {
     int i;
     unsigned long texture_id;
     cachedtexture_t *t;
 
-    texture_id = compute_fnv1a(filename, strlen(filename));
+    texture_id = compute_texture_id(config);
 
     // create root node
     if (tm->root == NULL) {
-        tm->root = create_node(NULL, filename, texture_id);
+        tm->root = create_node(NULL, config, texture_id);
         if (tm->root != NULL) {
             return &tm->root->texture;
         }
@@ -74,22 +111,26 @@ texture_t* get_texture(const char* filename, texturemanager_t* tm)
             t = t->child;
         }
         
-        t->child = create_node(t, filename, texture_id);
+        t->child = create_node(t, config, texture_id);
         if (t->child != NULL) {
             return &t->child->texture;
         }
     }
 
-    printf("Error loading texture: %s\n", filename);
+    //FIXME Improve error handling
+    if (config->type == LOAD_FILE) {
+        printf("Error loading texture: %s\n", config->file.filename);
+    }
+    else {
+        printf("Error creating texture.\n");
+    }
 
     return NULL;
 }
 
 int create_manager(texturemanager_t* tm)
 {
-    tm->numtextures = 0;
     tm->root = NULL;
-
     return 1;
 }
 
