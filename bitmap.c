@@ -204,3 +204,20 @@ int store_bitmap(bitmap_t* bitmap, const char* filename)
 
     return is_success;
 }
+
+int create_empty_bitmap(bitmap_t* bitmap, int size)
+{
+    bitmap->width = size;
+    bitmap->height = size;
+    bitmap->data = (unsigned char *)malloc(bitmap->width * bitmap->height * sizeof(unsigned char));
+    if (bitmap->data != NULL) {
+        bitmap->palette = (unsigned char *)malloc(768 * sizeof(unsigned char));
+        if (bitmap->palette != NULL) {
+            return 1;
+        }
+
+        free(bitmap->data);
+    }
+
+    return 0;
+}

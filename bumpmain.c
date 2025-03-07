@@ -198,11 +198,36 @@ int initialize_cube(object3d_t* cubeobj, texturemanager_t* tm)
 int initialize_torus(object3d_t* torusobj, texturemanager_t* tm)
 {
     int is_success;
+    //const textureconfig_t cfg = { .envmap = { 128, 63., 1.15, { 31, 2, 4, 27, COLOR_RED }, { 63, 1, 16, 20, COLOR_GREEN }, { 31, 2, 16, 48, COLOR_BLUE } }, COMPUTE_ENVMAP };
+
+    textureconfig_t cfg;
 #ifdef GLIDE_BUILD
-  const textureconfig_t config = {"assets/envmaps/envmap.3df", LOAD_FILE};
+    cfg.envmap.size = 256;
 #else
-  const textureconfig_t config = {"assets/envmaps/envmap.pcx", LOAD_FILE};
+    cfg.envmap.size = 128;
 #endif
+    cfg.envmap.scale = 1.2;
+    cfg.envmap.maxcolor = 63.;
+
+    cfg.envmap.red.maxcol = 31;
+    cfg.envmap.red.scalecol = 2;
+    cfg.envmap.red.diffuse = 4;
+    cfg.envmap.red.specular = 27;
+    cfg.envmap.red.colortype = COLOR_RED;
+
+    cfg.envmap.green.maxcol = 63;
+    cfg.envmap.green.scalecol = 1;
+    cfg.envmap.green.diffuse = 16;
+    cfg.envmap.green.specular = 20;
+    cfg.envmap.green.colortype = COLOR_GREEN;
+
+    cfg.envmap.blue.maxcol = 31;
+    cfg.envmap.blue.scalecol = 2;
+    cfg.envmap.blue.diffuse = 16;
+    cfg.envmap.blue.specular = 48;
+    cfg.envmap.blue.colortype = COLOR_BLUE;
+
+    cfg.type = COMPUTE_ENVMAP;
 
     is_success = load_object3d(torusobj, "assets/models/torus.3d");
     if (is_success) {
@@ -212,7 +237,7 @@ int initialize_torus(object3d_t* torusobj, texturemanager_t* tm)
         torusobj->ady = 1;
         torusobj->adz = 2;
 
-        is_success = set_envmap(torusobj, &config, tm);
+        is_success = set_envmap(torusobj, &cfg, tm);
         if (!is_success) {
             unload_object3d(torusobj);
         }

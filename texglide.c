@@ -5,6 +5,7 @@
 #include <glide.h>
 
 #include "texture.h"
+#include "envmap.h"
 
 typedef struct
 {
@@ -216,6 +217,31 @@ int load_texture(texture_t* texture, const char* filename)
     if (is_success) {
         texture->texturetype = TEXTURE_GLIDE;
         printf("Loaded texture: %s\n", filename);
+    }
+
+    return is_success;
+}
+
+//TODO Pass parameters
+int create_envmap(texture_t* texture)
+{
+    int is_success;
+    //TODO
+    int size = 256;
+    bitmap_t tb;
+
+    is_success = create_empty_bitmap(&tb, size);
+
+    if (is_success) {
+        compute_envmap(tb.data, size, 63., 1.15);
+        compute_phong_palette(tb.palette);
+        is_success = convert_bitmap(&tb, &texture->glidetexture);
+        if (is_success) {
+            //printf("Created envmap: %s\n", filename);
+            printf("Created envmap.\n");
+        }
+
+        unload_bitmap(&tb);
     }
 
     return is_success;

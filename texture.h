@@ -36,5 +36,7 @@ typedef struct
 
 int load_texture(texture_t *, const char *);
 void unload_texture(texture_t *);
+//TODO Pass parameters
+int create_envmap(texture_t *);
 
 #endif // _TEXTURE_H

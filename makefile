@@ -13,7 +13,8 @@ GLOBOBJS = &
  raster.obj &
  template.obj &
  texman.obj &
- texture.obj
+ texture.obj &
+ envmap.obj
 
 all: cubedemo.exe
 

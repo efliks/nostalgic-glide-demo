@@ -49,6 +49,8 @@ static int create_texture(texture_t* texture, const textureconfig_t* tc)
         break;
     case COMPUTE_ENVMAP:
         //TODO
+        //is_success = create_envmap(texture, tc->envmap);
+        is_success = create_envmap(texture);
         break;
     default:
         break;

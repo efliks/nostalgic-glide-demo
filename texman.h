@@ -2,6 +2,7 @@
 #define _TEXMAN_H
 
 #include "texture.h"
+#include "envmap.h"
 
 typedef enum 
 {
@@ -16,8 +17,19 @@ typedef struct
 
 typedef struct
 {
+    int size;
+    float scale;
+    float maxcolor;
+    component_t red;
+    component_t green;
+    component_t blue;
+} config_envmap_t;
+
+typedef struct
+{
     union {
         config_file_t file;
+        config_envmap_t envmap;
     };
 
     configtype_t type;
@@ -34,6 +46,7 @@ typedef struct
 {
     cachedtexture_t* root;
 } texturemanager_t;
+
 
 texture_t* get_texture(const textureconfig_t *, texturemanager_t *);
 
