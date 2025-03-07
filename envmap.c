@@ -1,5 +1,6 @@
 
 #include <math.h>
+#include <stdlib.h>
 
 #include "envmap.h"
 
@@ -51,19 +52,20 @@ static void compute_component(palette_color_t* pal, float diff, float spec, floa
     }
 }
 
-void compute_phong_palette(unsigned char* palette)
+void compute_phong_palette(unsigned char* palette, config_envmap_t* cfg)
 {
     int i;
 
     /*
     const colortype_t types[] = { COLOR_RED, COLOR_GREEN, COLOR_BLUE };
-    float maxcolor[] = { 31, 63, 31 };
-    float scalecolor[] = { 2, 1, 2 };
-    float diffuse[] = { 4, 16, 16 };
-    float specular[] = { 27, 20, 48 };
+    const float maxcolor[] = { 31, 63, 31 };
+    const float scalecolor[] = { 2, 1, 2 };
     */
-    const component_t components[] = { { 31, 2, 4, 27, COLOR_RED }, { 63, 1, 16, 20, COLOR_GREEN }, { 31, 2, 16, 48, COLOR_BLUE } };
-    const component_t* c = components;
+    component_t components[3];
+    component_t* c = components;
+    components[0] = cfg->red;
+    components[1] = cfg->green;
+    components[2] = cfg->blue;
 
     for (i = 0; i < 3; i++) {
         //compute_component((palette_color_t *)palette, (float)(rand() % 20), (float)(rand() % 50), maxcolor[i], scalecolor[i], types[i]);
@@ -72,25 +74,25 @@ void compute_phong_palette(unsigned char* palette)
     }
 }
 
-void compute_envmap(unsigned char* envmap, int size, float maxcolor, float scale)
+void compute_envmap(unsigned char *envmap, config_envmap_t* cfg)
 {
     int i, j;
     float x, y, color, w;
     unsigned char *ep;
 
-    w = 2 / (float)size;
+    w = 2 / (float)cfg->size;
     ep = envmap;
 
-    for (i = 0; i < size; i++) {
-        for (j = 0; j < size; j++) {
+    for (i = 0; i < cfg->size; i++) {
+        for (j = 0; j < cfg->size; j++) {
             x = (float)i * w - 1;
             y = (float)j * w - 1;
-            color = (1 - sqrt(pow(x, 2) + pow(y, 2))) * maxcolor * scale;
+            color = (1 - sqrt(pow(x, 2) + pow(y, 2))) * cfg->maxcolor * cfg->scale;
             if (color < 0) {
                 color = 0;
             }
-            else if (color > maxcolor) {
-                color = maxcolor;
+            else if (color > cfg->maxcolor) {
+                color = cfg->maxcolor;
             }
             *ep = (unsigned char)color;
             ep++;

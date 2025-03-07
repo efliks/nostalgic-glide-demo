@@ -17,16 +17,6 @@ typedef struct
 
 typedef struct
 {
-    int size;
-    float scale;
-    float maxcolor;
-    component_t red;
-    component_t green;
-    component_t blue;
-} config_envmap_t;
-
-typedef struct
-{
     union {
         config_file_t file;
         config_envmap_t envmap;
