@@ -4,6 +4,7 @@
 #include <glide.h>
 
 #include "bitmap.h"
+#include "envmap.h"
 
 typedef enum { 
     TEXTURE_SOFT, 
@@ -32,9 +33,12 @@ typedef struct
     texturetype_t texturetype;
 } texture_t;
 
+
 // functions
 
 int load_texture(texture_t *, const char *);
 void unload_texture(texture_t *);
+
+int create_envmap_texture(texture_t *, config_envmap_t *);
 
 #endif // _TEXTURE_H

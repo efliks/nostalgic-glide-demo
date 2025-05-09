@@ -221,6 +221,25 @@ int load_texture(texture_t* texture, const char* filename)
     return is_success;
 }
 
+int create_envmap_texture(texture_t* texture, config_envmap_t* cfg)
+{
+    int is_success;
+    bitmap_t tb;
+
+    is_success = create_envmap(&tb, cfg, cfg->is_auto);
+    if (is_success) {
+        is_success = convert_bitmap(&tb, &texture->glidetexture);
+        if (is_success) {
+            texture->texturetype = TEXTURE_GLIDE;
+            printf("Computed %dx%d envmap\n", cfg->size, cfg->size);
+        }
+
+        unload_bitmap(&tb);
+    }
+
+    return is_success;
+}
+
 void unload_texture(texture_t* texture)
 {
     unload_glide_texture(&texture->glidetexture);

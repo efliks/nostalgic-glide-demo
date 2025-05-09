@@ -26,10 +26,10 @@ static unsigned long compute_texture_id(const textureconfig_t* tc)
     static unsigned long envmap_id = (unsigned long)-1;
 
     switch (tc->type) {
-    case LOAD_FILE:
+    case CT_TEXTURE:
         texture_id = compute_fnv1a(tc->file.filename, strlen(tc->file.filename));
         break;
-    case COMPUTE_ENVMAP:
+    case CT_ENVMAP:
         texture_id = (--envmap_id);
         break;
     default:
@@ -44,11 +44,11 @@ static int create_texture(texture_t* texture, const textureconfig_t* tc)
     int is_success = 0;
 
     switch (tc->type) {
-    case LOAD_FILE:
+    case CT_TEXTURE:
         is_success = load_texture(texture, tc->file.filename);
         break;
-    case COMPUTE_ENVMAP:
-        //TODO
+    case CT_ENVMAP:
+        is_success = create_envmap_texture(texture, &tc->envmap);
         break;
     default:
         break;
@@ -118,7 +118,7 @@ texture_t* get_texture(const textureconfig_t* config, texturemanager_t* tm)
     }
 
     //FIXME Improve error handling
-    if (config->type == LOAD_FILE) {
+    if (config->type == CT_TEXTURE) {
         printf("Error loading texture: %s\n", config->file.filename);
     }
     else {

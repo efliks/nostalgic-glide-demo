@@ -167,9 +167,9 @@ int initialize_cube(object3d_t* cubeobj, texturemanager_t* tm)
 {
     int is_success;
 #ifdef GLIDE_BUILD
-    const textureconfig_t configs[20] = { { "assets/textures/camino2.pcx", LOAD_FILE }, { "assets/textures/floor_g.pcx", LOAD_FILE }, { "assets/textures/metal.pcx", LOAD_FILE }, { "assets/textures/trak_g.pcx", LOAD_FILE }, { "assets/textures/univ42.pcx", LOAD_FILE }, { "assets/textures/univ43.pcx", LOAD_FILE } };
+    const textureconfig_t configs[20] = { { "assets/textures/camino2.pcx", CT_TEXTURE }, { "assets/textures/floor_g.pcx", CT_TEXTURE }, { "assets/textures/metal.pcx", CT_TEXTURE }, { "assets/textures/trak_g.pcx", CT_TEXTURE }, { "assets/textures/univ42.pcx", CT_TEXTURE }, { "assets/textures/univ43.pcx", CT_TEXTURE } };
 #else
-    const textureconfig_t configs[20] = { { "assets/textures/s_camino.pcx", LOAD_FILE }, { "assets/textures/s_floorg.pcx", LOAD_FILE }, { "assets/textures/s_metal.pcx", LOAD_FILE }, { "assets/textures/s_trakg.pcx", LOAD_FILE }, { "assets/textures/s_univ2.pcx", LOAD_FILE }, { "assets/textures/s_univ3.pcx", LOAD_FILE } };
+    const textureconfig_t configs[20] = { { "assets/textures/s_camino.pcx", CT_TEXTURE }, { "assets/textures/s_floorg.pcx", CT_TEXTURE }, { "assets/textures/s_metal.pcx", CT_TEXTURE }, { "assets/textures/s_trakg.pcx", CT_TEXTURE }, { "assets/textures/s_univ2.pcx", CT_TEXTURE }, { "assets/textures/s_univ3.pcx", CT_TEXTURE } };
 #endif
     is_success = create_cube(cubeobj, configs, 6, tm);
     if (is_success) {
@@ -186,11 +186,37 @@ int initialize_cube(object3d_t* cubeobj, texturemanager_t* tm)
 int initialize_torus(object3d_t* torusobj, texturemanager_t* tm)
 {
     int is_success;
+    //const textureconfig_t cfg = { .envmap = { 0, 128, 63., 1.15, { 31, 2, 4, 27, COLOR_RED }, { 63, 1, 16, 20, COLOR_GREEN }, { 31, 2, 16, 48, COLOR_BLUE } }, CT_ENVMAP };
+
+    textureconfig_t cfg;
 #ifdef GLIDE_BUILD
-  const textureconfig_t config = {"assets/envmaps/envmap.3df", LOAD_FILE};
+    cfg.envmap.size = 256;
 #else
-  const textureconfig_t config = {"assets/envmaps/envmap.pcx", LOAD_FILE};
+    cfg.envmap.size = 128;
 #endif
+    cfg.envmap.is_auto = 0;
+    cfg.envmap.scale = 1.2;
+    cfg.envmap.maxcolor = 63.;
+
+    cfg.envmap.red.maxcol = 31;
+    cfg.envmap.red.scalecol = 2;
+    cfg.envmap.red.diffuse = 16;
+    cfg.envmap.red.specular = 17;
+    cfg.envmap.red.colortype = COLOR_RED;
+
+    cfg.envmap.green.maxcol = 63;
+    cfg.envmap.green.scalecol = 1;
+    cfg.envmap.green.diffuse = 6;
+    cfg.envmap.green.specular = 10;
+    cfg.envmap.green.colortype = COLOR_GREEN;
+
+    cfg.envmap.blue.maxcol = 31;
+    cfg.envmap.blue.scalecol = 2;
+    cfg.envmap.blue.diffuse = 10;
+    cfg.envmap.blue.specular = 35;
+    cfg.envmap.blue.colortype = COLOR_BLUE;
+
+    cfg.type = CT_ENVMAP;
 
     is_success = load_object3d(torusobj, "assets/models/torus.3d");
     if (is_success) {
@@ -200,7 +226,7 @@ int initialize_torus(object3d_t* torusobj, texturemanager_t* tm)
         torusobj->ady = 1;
         torusobj->adz = 2;
 
-        is_success = set_envmap(torusobj, &config, tm);
+        is_success = set_envmap(torusobj, &cfg, tm);
         if (!is_success) {
             unload_object3d(torusobj);
         }

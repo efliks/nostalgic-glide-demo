@@ -168,6 +168,11 @@ static void write_palette(FILE* fp, unsigned char* palette)
 
 int store_bitmap(bitmap_t* bitmap, const char* filename)
 {
+    store_bitmap_with_text(bitmap, filename, NULL);
+}
+
+int store_bitmap_with_text(bitmap_t* bitmap, const char* filename, char* hiddentext)
+{
     FILE* fp;
     int is_success = 0;
     pcxhead_t* header;
@@ -193,6 +198,10 @@ int store_bitmap(bitmap_t* bitmap, const char* filename)
         header->bytesperline = bitmap->width;
         header->palettetype = 1;
         header->numofplanes = 1;
+        if (hiddentext != NULL) {
+            // TODO Handle error if too long
+            strcpy((char *)header->filler, hiddentext);
+        }
 
         fwrite(myheader, 128, 1, fp);
  
@@ -203,4 +212,21 @@ int store_bitmap(bitmap_t* bitmap, const char* filename)
     }
 
     return is_success;
+}
+
+int create_empty_bitmap(bitmap_t* bitmap, int size)
+{
+    bitmap->width = size;
+    bitmap->height = size;
+    bitmap->data = (unsigned char *)malloc(bitmap->width * bitmap->height * sizeof(unsigned char));
+    if (bitmap->data != NULL) {
+        bitmap->palette = (unsigned char *)malloc(768 * sizeof(unsigned char));
+        if (bitmap->palette != NULL) {
+            return 1;
+        }
+
+        free(bitmap->data);
+    }
+
+    return 0;
 }

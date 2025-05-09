@@ -12,7 +12,8 @@ GLOBOBJS = &
  rsglide.obj &
  template.obj &
  texman.obj &
- texglide.obj
+ texglide.obj &
+ envmap.obj
 
 all: cubegl.exe
 
