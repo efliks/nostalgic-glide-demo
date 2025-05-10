@@ -67,8 +67,8 @@ There are two objects in the demo, a texture mapped cube, and a Phong
 illuminated torus. Switch between them by pressing [space]. Use [escape] to 
 quit the demo. 
 
-The software rasterizer cannot do Gouraud shading together with texture 
-mapping, and does not use perspective correction.
+The software rasterizer uses polygon drawing routines by Mikael Kalms that 
+can be found [at this link](https://www.lysator.liu.se/~mikaelk/doc/perspectivetexture).
 
 ## Tested platforms & libraries
 

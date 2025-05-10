@@ -6,7 +6,7 @@ GLOBOBJS = &
  bitmap.obj &
  bumpmain.obj &
  bumpobj.obj &
- bumptri.obj &
+ ptpoly2.obj &
  vga13h.obj &
  sys.obj &
  main.obj &

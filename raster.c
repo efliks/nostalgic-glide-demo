@@ -3,7 +3,7 @@
 
 #include "raster.h"
 #include "vga13h.h"
-#include "bumptri.h"
+#include "ptpoly2.h"
 
 int create_context(drawcontext_t* dc)
 {
@@ -67,7 +67,7 @@ static unsigned char compute_intensity(vector3d_t* normal, vector3d_t* light)
     return (unsigned char)(dot * 62);
 }
 
-static void draw_envmapped_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, facedata_t* f, drawcontext_t* dc)
+static void draw_envmapped_triangle(TPolytri* poly, facedata_t* f, drawcontext_t* dc)
 {
     int tsi, shifty;
     float ts;
@@ -82,40 +82,45 @@ static void draw_envmapped_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, fa
     ts = (float)(f->mapper.texture->bitmap.width) * 0.5 - 1;
 
     // Why this works?
-    v1->tx = (int)(f->v1->rotated_normal.z * ts + ts);
-    v1->ty = (int)(f->v1->rotated_normal.y * ts + ts);
+    poly->u1 = f->v1->rotated_normal.z * ts + ts;
+    poly->v1 = f->v1->rotated_normal.y * ts + ts;
+          
+    poly->u2 = f->v2->rotated_normal.z * ts + ts;
+    poly->v2 = f->v2->rotated_normal.y * ts + ts;
+          
+    poly->u3 = f->v3->rotated_normal.z * ts + ts;
+    poly->v3 = f->v3->rotated_normal.y * ts + ts;
+    poly->texture = (char *)f->mapper.texture->bitmap.data;
 
-    v2->tx = (int)(f->v2->rotated_normal.z * ts + ts);
-    v2->ty = (int)(f->v2->rotated_normal.y * ts + ts);
-
-    v3->tx = (int)(f->v3->rotated_normal.z * ts + ts);
-    v3->ty = (int)(f->v3->rotated_normal.y * ts + ts);
-
-    textured_triangle(v1, v2, v3, shifty, f->mapper.texture->bitmap.data, dc->soft.framebuffer);
+    drawtpolysubtri(poly, shifty, (char *)dc->soft.framebuffer);
 }
 
-static void draw_gouraud_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, facedata_t* f, vector3d_t* lightvector, drawcontext_t* dc)
+static void draw_gouraud_triangle(TPolytri* poly, facedata_t* f, vector3d_t* lightvector, drawcontext_t* dc)
 {
-    v1->c = compute_intensity(&f->v1->rotated_normal, lightvector);
-    v2->c = compute_intensity(&f->v2->rotated_normal, lightvector);
-    v3->c = compute_intensity(&f->v3->rotated_normal, lightvector);
+    unsigned char c1, c2, c3;
+
+    c1 = compute_intensity(&f->v1->rotated_normal, lightvector);
+    c2 = compute_intensity(&f->v2->rotated_normal, lightvector);
+    c3 = compute_intensity(&f->v3->rotated_normal, lightvector);
     
-    gouraud_triangle(v1, v2, v3, dc->soft.framebuffer);
+    //TODO
 }
 
-static void draw_textured_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, facedata_t* f, drawcontext_t* dc)
+static void draw_textured_triangle(TPolytri* poly, facedata_t* f, drawcontext_t* dc)
 {
     int ts, tt, shifty;
 
     //TODO Optimize
     ts = f->mapper.texture->bitmap.width;
     tt = f->mapper.texture->bitmap.height;
-    v1->tx = f->mapper.s1 * ts;
-    v1->ty = f->mapper.t1 * tt;
-    v2->tx = f->mapper.s2 * ts;
-    v2->ty = f->mapper.t2 * tt;
-    v3->tx = f->mapper.s3 * ts;
-    v3->ty = f->mapper.t3 * tt;
+
+    poly->u1 = (float)(f->mapper.s1 * ts);
+    poly->v1 = (float)(f->mapper.t1 * tt);
+    poly->u2 = (float)(f->mapper.s2 * ts);
+    poly->v2 = (float)(f->mapper.t2 * tt);
+    poly->u3 = (float)(f->mapper.s3 * ts);
+    poly->v3 = (float)(f->mapper.t3 * tt);
+    poly->texture = (char *)f->mapper.texture->bitmap.data;
 
     if (ts == 128) {
         shifty = 7;
@@ -124,13 +129,13 @@ static void draw_textured_triangle(vertex_t* v1, vertex_t* v2, vertex_t* v3, fac
         shifty = 8;
     }
 
-    textured_triangle(v1, v2, v3, shifty, f->mapper.texture->bitmap.data, dc->soft.framebuffer);
+    drawtpolyperspdivsubtri(poly, shifty, (char *)dc->soft.framebuffer);
 }
 
 void draw_object3d(object3d_t* obj, vector3d_t* lightvector, drawcontext_t* dc)
 {
     int i;
-    vertex_t v1, v2, v3;
+    TPolytri poly;
     float corrx, corry;
     facedata_t *f;
     faceorder_t* fo = obj->faceorder;
@@ -144,24 +149,27 @@ void draw_object3d(object3d_t* obj, vector3d_t* lightvector, drawcontext_t* dc)
 
     for (i = 0; i < obj->numvisible; i++) {
         f = fo->face;
-        v1.x = (int)(f->v1->translated_point.x + corrx);
-        v1.y = (int)(f->v1->translated_point.y + corry);
-
-        v2.x = (int)(f->v2->translated_point.x + corrx);
-        v2.y = (int)(f->v2->translated_point.y + corry);
-
-        v3.x = (int)(f->v3->translated_point.x + corrx);
-        v3.y = (int)(f->v3->translated_point.y + corry);
+        poly.x1 = f->v1->translated_point.x + corrx;
+        poly.y1 = f->v1->translated_point.y + corry;
+        poly.z1 = 1. / f->v1->oow;
+          
+        poly.x2 = f->v2->translated_point.x + corrx;
+        poly.y2 = f->v2->translated_point.y + corry;
+        poly.z2 = 1. / f->v2->oow;
+          
+        poly.x3 = f->v3->translated_point.x + corrx;
+        poly.y3 = f->v3->translated_point.y + corry;
+        poly.z3 = 1. / f->v3->oow;
 
         switch (dc->drawmode) {
         case MODE_TEXTURE:
-            draw_textured_triangle(&v1, &v2, &v3, f, dc);
+            draw_textured_triangle(&poly, f, dc);
             break;
         case MODE_ENVMAP:
-            draw_envmapped_triangle(&v1, &v2, &v3, f, dc);
+            draw_envmapped_triangle(&poly, f, dc);
             break;
         case MODE_GOURAUD:
-            draw_gouraud_triangle(&v1, &v2, &v3, f, lightvector, dc);
+            draw_gouraud_triangle(&poly, f, lightvector, dc);
             break;
         default:
             break;
